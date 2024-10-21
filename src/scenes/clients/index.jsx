@@ -147,7 +147,11 @@ const Clients = () => {
           "& .MuiDataGrid-cell": { borderBottom: "none" },
           "& .MuiDataGrid-columnHeader": {
             borderBottom: "none",
-            backgroundColor: colors.blueAccent[600],
+            backgroundColor: colors.greenAccent[600],
+            fontSize: "14px",
+          },
+          "& .MuiDataGrid-cell": {
+            fontSize: "14px",
           },
           "& .MuiDataGrid-virtualScroller": {
             backgroundColor: colors.primary[400],
@@ -155,7 +159,7 @@ const Clients = () => {
           "& .MuiDataGrid-footerContainer": {
             borderTop: "none",
             borderRadius: "0 0 6px 6px",
-            backgroundColor: colors.blueAccent[600],
+            backgroundColor: colors.greenAccent[600],
           },
         }}
       >
