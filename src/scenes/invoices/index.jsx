@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { Box, Typography, useTheme } from "@mui/material";
+import { Box, useTheme } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 import axios from "axios";
+import { esES } from "@mui/x-data-grid/locales";
 import { tokens } from "../../theme";
-import { mockDataInvoices } from "../../data/mockData";
 import Header from "../../components/Header.jsx";
 
 const Invoices = () => {
@@ -15,40 +15,39 @@ const Invoices = () => {
       .get("/get_payments")
       .then((res) => {
         setData(res.data);
-        console.log("got the payments!");
       })
       .catch((err) => console.log(err));
   }, []);
 
   const columns = [
     {
-      field: "firstName",
+      field: "Nombre",
       headerName: "Nombre",
       flex: 1,
     },
     {
-      field: "lastName",
-      headerName: "Nombre",
+      field: "Apellido",
+      headerName: "Apellido",
       flex: 1,
     },
     {
-      field: "amount",
-      headerName: "Cantidad",
+      field: "Monto",
+      headerName: "Monto",
       flex: 1,
     },
     {
-      field: "phone",
+      field: "Telefono",
       headerName: "Numero de telefono",
       flex: 1,
     },
     {
-      field: "email",
+      field: "Email",
       headerName: "Correo electronico",
       flex: 1,
     },
 
     {
-      field: "date",
+      field: "FechaPago",
       headerName: "Fecha de pago",
       flex: 1,
     },
@@ -66,7 +65,7 @@ const Invoices = () => {
           "& .MuiDataGrid-cell": { borderBottom: "none" },
           "& .MuiDataGrid-columnHeader": {
             borderBottom: "none",
-            backgroundColor: colors.blueAccent[800],
+            backgroundColor: colors.blueAccent[600],
           },
           "& .MuiDataGrid-virtualScroller": {
             backgroundColor: colors.primary[400],
@@ -74,10 +73,10 @@ const Invoices = () => {
           "& .MuiDataGrid-footerContainer": {
             borderTop: "none",
             borderRadius: "0 0 6px 6px",
-            backgroundColor: colors.blueAccent[800],
+            backgroundColor: colors.blueAccent[600],
           },
           "& .MuiCheckbox-root": {
-            color: `${colors.greenAccent[200]} !important`,
+            color: `${colors.greenAccent[300]} !important`,
           },
         }}
       >
@@ -85,6 +84,7 @@ const Invoices = () => {
           rows={data}
           columns={columns}
           getRowId={(row) => row.ClienteID}
+          localeText={esES.components.MuiDataGrid.defaultProps.localeText}
           checkboxSelection
         />
       </Box>

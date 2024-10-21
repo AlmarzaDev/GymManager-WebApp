@@ -1,5 +1,6 @@
 import { useState } from "react";
 import FullCalendar from "@fullcalendar/react";
+import esLocale from "@fullcalendar/core/locales/es";
 import { formatDate } from "@fullcalendar/core";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
@@ -92,6 +93,7 @@ const Calendar = () => {
         <Box flex="1 1 100%" ml="15px">
           <FullCalendar
             height="75vh"
+            locale={esLocale}
             plugins={[
               dayGridPlugin,
               timeGridPlugin,

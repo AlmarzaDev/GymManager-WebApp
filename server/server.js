@@ -20,9 +20,9 @@ const db = mysql.createConnection({
 });
 
 app.post("/add_client", (req, res) => {
-  const id = uuid4v();
   sql =
     "INSERT INTO clientes (`ClienteID`, `Nombre`, `Apellido`, `Cedula`, `Edad`, `Email`, `Telefono`, `Direccion`, `FechaRegistro`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+  const id = uuid4v();
   const values = [
     id,
     req.body.firstName,
@@ -43,10 +43,45 @@ app.post("/add_client", (req, res) => {
   });
 });
 
+app.put("/edit_client", (req, res) => {
+  sql =
+    "UPDATE clientes SET Nombre = ?, Apellido = ?, Cedula = ?, Edad = ?, Email = ?, Telefono = ?, Direccion = ?, FechaRegistro = ? WHERE ClienteID = ?";
+  const values = [
+    req.body.firstName,
+    req.body.lastName,
+    req.body.cedula,
+    req.body.age,
+    req.body.email,
+    req.body.contact,
+    req.body.address,
+    req.body.date,
+    req.body.ClienteID,
+  ];
+  db.query(sql, values, (err, result) => {
+    if (err)
+      return res.json({
+        message: "Algo salio horriblemente mal. Fijate: " + err,
+      });
+    return res.json({ success: "Cliente editado exitosamente!" });
+  });
+});
+
+app.post("/delete_client", (req, res) => {
+  const sql = "DELETE FROM clientes WHERE ClienteID = ?;";
+  const values = [req.body.ClienteID];
+  db.query(sql, values, (err, result) => {
+    if (err)
+      return res.json({
+        message: "Algo salio horriblemente mal. Fijate: " + err,
+      });
+    return res.json({ success: "Cliente eliminado exitosamente!" });
+  });
+});
+
 app.post("/add_payment", (req, res) => {
-  const id = uuid4v();
   const sql =
     "INSERT INTO pagos (`PagoID`, `ClienteID`, `Monto`, `FechaPago`) VALUES (?, ?, ?, ?)";
+  const id = uuid4v();
   const values = [id, req.body.clientID, req.body.amount, req.body.date];
   db.query(sql, values, (err, result) => {
     if (err)
@@ -67,7 +102,7 @@ app.get("/get_clients", (req, res) => {
 
 app.get("/get_payments", (req, res) => {
   const sql =
-    "SELECT c.ClienteID, c.Nombre AS firstName, c.Apellido AS lastName, p.Monto AS amount, p.FechaPago AS date, c.Telefono AS phone, c.Email AS email FROM clientes c JOIN pagos p ON c.ClienteID = p.ClienteID WHERE p.FechaPago = (SELECT MAX(p2.FechaPago) FROM pagos p2 WHERE p2.ClienteID = c.ClienteID);";
+    "SELECT * FROM clientes JOIN pagos ON clientes.ClienteID = pagos.ClienteID";
   db.query(sql, (err, result) => {
     if (err) res.json({ message: "Error del servidor" });
     return res.json(result);
@@ -75,5 +110,5 @@ app.get("/get_payments", (req, res) => {
 });
 
 app.listen(port, () => {
-  console.log("PREPULISTO");
+  console.log("RUNNING");
 });

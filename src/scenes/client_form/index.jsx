@@ -47,7 +47,7 @@ const userSchema = yup.object().shape({
   date: yup.mixed().required("Requerido."),
 });
 
-const Form = () => {
+const Client_Form = () => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
   const [snackbarState, setSnackbarState] = React.useState({
@@ -72,18 +72,15 @@ const Form = () => {
   const isNonMobile = useMediaQuery("(min-width:600px)");
 
   const handleFormSubmit = (values, onSubmitProps) => {
-    console.log(values);
     axios
       .post("/add_client", values)
       .then((res) => {
-        console.log("Everything went well!");
         console.log(res);
         onSubmitProps.resetForm();
         handleSnackbar("Cliente creado exitosamente!");
       })
       .catch((err) => {
         console.log(err);
-        onSubmitProps.resetForm();
         handleSnackbar("Algo salio mal.");
       });
   };
@@ -115,6 +112,7 @@ const Form = () => {
           handleBlur,
           handleChange,
           handleSubmit,
+          setFieldValue,
         }) => (
           <form onSubmit={handleSubmit}>
             <Box
@@ -187,7 +185,7 @@ const Form = () => {
                 <TextField
                   fullWidth
                   variant="filled"
-                  type="text"
+                  type="number"
                   name="age"
                   label="Edad"
                   onBlur={handleBlur}
@@ -231,17 +229,22 @@ const Form = () => {
                     label="Fecha"
                     value={values.date}
                     onChange={(newValue) => {
-                      handleChange({
-                        target: { name: "date", value: newValue },
-                      });
+                      setFieldValue("date", newValue);
                     }}
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        error={!!touched.date && !!errors.date}
+                        helperText={touched.date && errors.date}
+                      />
+                    )}
                     sx={{ gridColumn: "span 4" }}
                   />
                 </LocalizationProvider>
               </Box>
               <Box display="flex" justifyContent="end" mt="30px">
                 <Button type="submit" color="secondary" variant="contained">
-                  Crear nuevo usuario
+                  Crear nuevo cliente
                 </Button>
               </Box>
             </Box>
@@ -252,4 +255,4 @@ const Form = () => {
   );
 };
 
-export default Form;
+export default Client_Form;

@@ -28,15 +28,15 @@ export const tokens = (mode) => ({
           900: "#040509",
         },
         greenAccent: {
-          100: "#dbf5ee",
-          200: "#b7ebde",
-          300: "#94e2cd",
-          400: "#70d8bd",
-          500: "#4cceac",
-          600: "#3da58a",
-          700: "#2e7c67",
-          800: "#1e5245",
-          900: "#0f2922",
+          100: "#B7DEDE",
+          200: "#9ACFCE",
+          300: "#7EBFBF",
+          400: "#61B0AF",
+          500: "#44A1A0",
+          600: "#398786",
+          700: "#2E6C6B",
+          800: "#225251",
+          900: "#173736",
         },
         redAccent: {
           100: "#f8dcdb",
@@ -50,15 +50,15 @@ export const tokens = (mode) => ({
           900: "#2c100f",
         },
         blueAccent: {
-          100: "#e1e2fe",
-          200: "#c3c6fd",
-          300: "#a4a9fc",
-          400: "#868dfb",
-          500: "#6870fa",
-          600: "#535ac8",
-          700: "#3e4396",
-          800: "#2a2d64",
-          900: "#151632",
+          100: "#C6D5E4",
+          200: "#9DB6CD",
+          300: "#7596B7",
+          400: "#4C77A0",
+          500: "#235789",
+          600: "#1F4E7B",
+          700: "#1C456C",
+          800: "#183C5E",
+          900: "#15334F",
         },
       }
     : {
@@ -85,15 +85,15 @@ export const tokens = (mode) => ({
           900: "#d0d1d5",
         },
         greenAccent: {
-          100: "#0f2922",
-          200: "#1e5245",
-          300: "#2e7c67",
-          400: "#3da58a",
-          500: "#4cceac",
-          600: "#70d8bd",
-          700: "#94e2cd",
-          800: "#b7ebde",
-          900: "#dbf5ee",
+          100: "#173736",
+          200: "#225251",
+          300: "#2E6C6B",
+          400: "#398786",
+          500: "#44A1A0",
+          600: "#61B0AF",
+          700: "#7EBFBF",
+          800: "#9ACFCE",
+          900: "#B7DEDE",
         },
         redAccent: {
           100: "#2c100f",
@@ -107,20 +107,20 @@ export const tokens = (mode) => ({
           900: "#f8dcdb",
         },
         blueAccent: {
-          100: "#151632",
-          200: "#2a2d64",
-          300: "#3e4396",
-          400: "#535ac8",
-          500: "#6870fa",
-          600: "#868dfb",
-          700: "#a4a9fc",
-          800: "#c3c6fd",
-          900: "#e1e2fe",
+          100: "#15334F",
+          200: "#183C5E",
+          300: "#1C456C",
+          400: "#1F4E7B",
+          500: "#235789",
+          600: "#4C77A0",
+          700: "#7596B7",
+          800: "#9DB6CD",
+          900: "#C6D5E4",
         },
       }),
 });
 
-// mui theme settings
+// configuracion del tema de mui
 export const themeSettings = (mode) => {
   const colors = tokens(mode);
 
@@ -192,7 +192,7 @@ export const themeSettings = (mode) => {
   };
 };
 
-// context for color mode
+// contexto para el color mode
 export const ColorModeContext = createContext({
   toggleColorMode: () => {},
 });
