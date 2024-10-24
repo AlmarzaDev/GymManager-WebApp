@@ -9,7 +9,6 @@ import {
 } from "@mui/material";
 import { Formik } from "formik";
 import * as yup from "yup";
-import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
@@ -18,9 +17,20 @@ import useMediaQuery from "@mui/material/useMediaQuery";
 import Header from "../../components/Header";
 import { tokens } from "../../theme";
 
+const initialValues = {
+  firstName: "",
+  lastName: "",
+  cedula: "",
+  age: "",
+  email: "",
+  contact: "",
+  address: "",
+  date: dayjs(),
+};
+
 const phoneRegEx = /^(\+\d{1,2}\s?)?\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}$/;
 
-const userSchema = yup.object().shape({
+const clientSchema = yup.object().shape({
   firstName: yup.string().required("Requerido."),
   lastName: yup.string().required("Requerido."),
   cedula: yup.string().required("Requerido."),
@@ -37,25 +47,9 @@ const userSchema = yup.object().shape({
   date: yup.mixed().required("Requerido."),
 });
 
-const Edit_Form = () => {
+const Client_Form = () => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
-  const location = useLocation();
-  const navigate = useNavigate();
-  const { client } = location.state;
-
-  const initialValues = {
-    firstName: client.Nombre,
-    lastName: client.Apellido,
-    cedula: client.Cedula,
-    age: client.Edad,
-    email: client.Email,
-    contact: client.Telefono,
-    address: client.Direccion,
-    date: dayjs(client.FechaRegistro),
-    ClienteID: client.ClienteID,
-  };
-
   const [snackbarState, setSnackbarState] = React.useState({
     open: false,
     message: "",
@@ -79,11 +73,11 @@ const Edit_Form = () => {
 
   const handleFormSubmit = (values, onSubmitProps) => {
     axios
-      .put("/edit_client", values)
+      .post("/add_client", values)
       .then((res) => {
         console.log(res);
-        handleSnackbar("Cliente editado exitosamente!");
-        navigate("/clients");
+        onSubmitProps.resetForm();
+        handleSnackbar("Cliente creado exitosamente!");
       })
       .catch((err) => {
         console.log(err);
@@ -103,13 +97,13 @@ const Edit_Form = () => {
       />
 
       <Header
-        title="EDITAR CLIENTE"
-        subtitle="Edita el perfil de un cliente existente"
+        title="CREAR CLIENTE"
+        subtitle="Crea el perfil de un nuevo cliente"
       />
       <Formik
         onSubmit={handleFormSubmit}
         initialValues={initialValues}
-        validationSchema={userSchema}
+        validationSchema={clientSchema}
       >
         {({
           values,
@@ -136,15 +130,6 @@ const Edit_Form = () => {
                   "& > div": { gridColumn: isNonMobile ? undefined : "span 4" },
                 }}
               >
-                <TextField
-                  disabled
-                  variant="filled"
-                  type="text"
-                  name="ClienteID"
-                  label="ClienteID"
-                  value={values.ClienteID}
-                  sx={{ gridColumn: "span 4" }}
-                />
                 <TextField
                   fullWidth
                   variant="filled"
@@ -213,7 +198,7 @@ const Edit_Form = () => {
                 <TextField
                   fullWidth
                   variant="filled"
-                  type="text"
+                  type="email"
                   name="email"
                   label="Correo electronico"
                   onBlur={handleBlur}
@@ -259,7 +244,7 @@ const Edit_Form = () => {
               </Box>
               <Box display="flex" justifyContent="end" mt="30px">
                 <Button type="submit" color="secondary" variant="contained">
-                  Editar cliente
+                  Crear nuevo cliente
                 </Button>
               </Box>
             </Box>
@@ -270,4 +255,4 @@ const Edit_Form = () => {
   );
 };
 
-export default Edit_Form;
+export default Client_Form;

@@ -19,6 +19,20 @@ const db = mysql.createConnection({
   database: "gym_logistics",
 });
 
+const users = [{ email: "admin@gmail.com", password: "password123" }];
+
+app.post("/login", (req, res) => {
+  const { email, password } = req.body;
+
+  const user = users.find((u) => u.email === email && u.password === password);
+
+  if (user) {
+    return res.json({ token: "your-auth-token" });
+  } else {
+    return res.status(401).json({ message: "Invalid credentials" });
+  }
+});
+
 app.post("/add_client", (req, res) => {
   sql =
     "INSERT INTO clientes (`ClienteID`, `Nombre`, `Apellido`, `Cedula`, `Edad`, `Email`, `Telefono`, `Direccion`, `FechaRegistro`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";

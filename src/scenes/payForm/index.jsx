@@ -48,11 +48,6 @@ const Pay = () => {
       .catch((err) => console.log(err));
   }, []);
 
-  const [client, setClient] = React.useState("");
-  const handleSelectChange = (event) => {
-    setClient(event.target.value);
-  };
-
   const [snackbarState, setSnackbarState] = React.useState({
     open: false,
     message: "",
