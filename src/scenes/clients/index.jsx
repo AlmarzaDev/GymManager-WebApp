@@ -22,7 +22,7 @@ const Clients = () => {
 
   const fetchClients = () => {
     axios
-      .get("/get_clients")
+      .get("http://localhost:5000/get_clients")
       .then((res) => {
         setData(res.data);
       })
@@ -35,7 +35,7 @@ const Clients = () => {
 
   const handleDelete = (ClienteID) => {
     axios
-      .post("/delete_client", { ClienteID })
+      .post("http://localhost:5000/delete_client", { ClienteID })
       .then((res) => {
         console.log(res);
         handleSnackbar("Cliente eliminado exitosamente.");
@@ -144,13 +144,10 @@ const Clients = () => {
         width="162vh"
         sx={{
           "& .MuiDataGrid-root": { border: "none" },
-          "& .MuiDataGrid-cell": { borderBottom: "none" },
+          "& .MuiDataGrid-cell": { borderBottom: "none", fontSize: "14px" },
           "& .MuiDataGrid-columnHeader": {
             borderBottom: "none",
             backgroundColor: colors.greenAccent[600],
-            fontSize: "14px",
-          },
-          "& .MuiDataGrid-cell": {
             fontSize: "14px",
           },
           "& .MuiDataGrid-virtualScroller": {

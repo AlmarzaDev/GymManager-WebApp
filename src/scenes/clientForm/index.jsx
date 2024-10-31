@@ -73,7 +73,7 @@ const Client_Form = () => {
 
   const handleFormSubmit = (values, onSubmitProps) => {
     axios
-      .post("/add_client", values)
+      .post("http://localhost:5000/add_client", values)
       .then((res) => {
         console.log(res);
         onSubmitProps.resetForm();

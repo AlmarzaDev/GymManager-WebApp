@@ -16,7 +16,7 @@ import useMediaQuery from "@mui/material/useMediaQuery";
 
 const LoginButton = styled(Button)({
   fontSize: "16px",
-  borderRadius: "24px",
+  borderRadius: "30px",
   padding: "12px 0",
 });
 
@@ -60,7 +60,7 @@ const Login = () => {
     const email = values.email;
     const password = values.password;
     axios
-      .post("/login", { email, password })
+      .post("http://localhost:5000/login", { email, password })
       .then((res) => {
         localStorage.setItem("authToken", res.data.token);
         handleSnackbar("Cliente creado exitosamente!");
@@ -74,6 +74,10 @@ const Login = () => {
       });
   };
 
+  const handleForgotPassword = () => {
+    handleSnackbar("Contacta al (424) 158-4946 para obtener la contraseña");
+  };
+
   return (
     <Box display="flex" flexDirection="column">
       <Snackbar
@@ -84,10 +88,10 @@ const Login = () => {
         anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
         TransitionComponent={Slide}
       />
-      <Box alignSelf="flex-start" sx={{ mt: "20px", ml: "15px" }}>
+      <Box alignSelf="flex-start" sx={{ mt: "50px", ml: "50px" }}>
         <img
           alt="logo"
-          height="120px"
+          height="90px"
           width="auto"
           src={`../../assets/full_logo.png`}
           style={{ cursor: "pointer" }}
@@ -102,15 +106,15 @@ const Login = () => {
         borderRadius="6px"
         margin="15px"
         padding="35px 30px"
-        gap="5px"
         boxShadow="0px 3px 5px 3px rgba(184,184,184,0.75)"
         minWidth="500px"
+        maxWidth="550px"
       >
-        <Typography variant="h1" fontWeight="bold" marginTop="5px">
+        <Typography variant="h1" fontWeight="bold" marginTop="10px">
           Iniciar Sesión
         </Typography>
-        <Typography variant="h4" marginTop="5px" marginBottom="30px">
-          Accede a tu cuenta para gestionar tus actividades
+        <Typography variant="h4" marginTop="10px" marginBottom="30px">
+          Accede a tu cuenta para gestionar tus actividades.
         </Typography>
 
         <Formik
@@ -154,7 +158,7 @@ const Login = () => {
                   variant="outlined"
                   type="password"
                   name="password"
-                  label="Contrasena"
+                  label="Contraseña"
                   onBlur={handleBlur}
                   onChange={handleChange}
                   value={values.password}
@@ -162,13 +166,16 @@ const Login = () => {
                   helperText={touched.password && errors.password}
                   sx={{ gridColumn: "span 4" }}
                 />
+                <a className="link" onClick={handleForgotPassword}>
+                  ¿Olvidaste la contraseña?
+                </a>
                 <LoginButton
                   type="submit"
                   color="secondary"
                   variant="contained"
                   sx={{ gridColumn: "span 4", mt: "15px", mb: "20px" }}
                 >
-                  Iniciar sesion
+                  Iniciar Sesión
                 </LoginButton>
               </Box>
             </form>

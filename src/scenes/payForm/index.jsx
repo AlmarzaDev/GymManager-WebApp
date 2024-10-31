@@ -41,7 +41,7 @@ const Pay = () => {
   const [data, setData] = React.useState([]);
   React.useEffect(() => {
     axios
-      .get("/get_clients")
+      .get("http://localhost:5000/get_clients")
       .then((res) => {
         setData(res.data);
       })

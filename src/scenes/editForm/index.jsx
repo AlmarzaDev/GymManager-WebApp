@@ -79,7 +79,7 @@ const Edit_Form = () => {
 
   const handleFormSubmit = (values, onSubmitProps) => {
     axios
-      .put("/edit_client", values)
+      .put("http://localhost:5000/edit_client", values)
       .then((res) => {
         console.log(res);
         handleSnackbar("Cliente editado exitosamente!");

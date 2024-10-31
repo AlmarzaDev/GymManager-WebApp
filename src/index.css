@@ -35,3 +35,10 @@ body,
 ::-webkit-scrollbar-thumb:hover {
   background: #555;
 }
+
+.link {
+  color: #2468c0;
+  text-decoration: underline;
+  cursor: pointer;
+  white-space: nowrap;
+}

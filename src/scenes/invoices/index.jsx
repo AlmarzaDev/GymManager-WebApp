@@ -12,7 +12,7 @@ const Invoices = () => {
   const [data, setData] = useState([]);
   useEffect(() => {
     axios
-      .get("/get_payments")
+      .get("http://localhost:5000/get_payments")
       .then((res) => {
         setData(res.data);
       })
@@ -62,13 +62,10 @@ const Invoices = () => {
         width="162vh"
         sx={{
           "& .MuiDataGrid-root": { border: "none" },
-          "& .MuiDataGrid-cell": { borderBottom: "none" },
+          "& .MuiDataGrid-cell": { borderBottom: "none", fontSize: "14px" },
           "& .MuiDataGrid-columnHeader": {
             borderBottom: "none",
             backgroundColor: colors.greenAccent[600],
-            fontSize: "14px",
-          },
-          "& .MuiDataGrid-cell": {
             fontSize: "14px",
           },
           "& .MuiDataGrid-virtualScroller": {
