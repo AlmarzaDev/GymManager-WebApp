@@ -11,7 +11,7 @@ const FAQ = () => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
   return (
-    <Box m="30px" width="162vh">
+    <Box m="30px" width="169vh">
       <Header
         title="PREGUNTAS FRECUENTES"
         subtitle="Podrian aclarar algunas dudas"

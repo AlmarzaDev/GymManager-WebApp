@@ -59,7 +59,7 @@ const Invoices = () => {
       <Box
         m="30px 0 0 0"
         height="72vh"
-        width="162vh"
+        width="169vh"
         sx={{
           "& .MuiDataGrid-root": { border: "none" },
           "& .MuiDataGrid-cell": { borderBottom: "none", fontSize: "14px" },

@@ -53,7 +53,7 @@ const Calendar = () => {
         subtitle="Pagina interactiva para eventos importantes"
       />
 
-      <Box display="flex" justifyContent="space-between" width="162vh">
+      <Box display="flex" justifyContent="space-between" width="166vh">
         {/* SIDEBAR */}
         <Box
           flex="1 1 20%"

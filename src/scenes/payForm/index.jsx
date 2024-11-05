@@ -6,6 +6,7 @@ import {
   InputLabel,
   MenuItem,
   Select,
+  Autocomplete,
   TextField,
   useTheme,
   Snackbar,
@@ -68,7 +69,7 @@ const Pay = () => {
   const handleFormSubmit = (values, onSubmitProps) => {
     console.log(values);
     axios
-      .post("/add_payment", values)
+      .post("http://localhost:5000/add_payment", values)
       .then((res) => {
         console.log("Everything went well!");
         console.log(res);
@@ -109,7 +110,7 @@ const Pay = () => {
         }) => (
           <form onSubmit={handleSubmit}>
             <Box
-              maxWidth="1000px"
+              maxWidth="1100px"
               backgroundColor={colors.primary[400]}
               margin="10px"
               padding="35px 30px"
@@ -124,23 +125,31 @@ const Pay = () => {
                 }}
               >
                 <FormControl sx={{ gridColumn: "span 4" }}>
-                  <InputLabel id="select-label">Nombre del cliente</InputLabel>
-                  <Select
-                    labelId="select-label"
-                    variant="filled"
-                    name="clientID"
-                    onBlur={handleBlur}
-                    onChange={handleChange}
-                    value={values.clientID}
-                    error={!!touched.clientID && !!errors.clientID}
-                    helperText={touched.clientID && errors.clientID}
-                  >
-                    {data.map((client) => (
-                      <MenuItem key={client.ClienteID} value={client.ClienteID}>
-                        {client.Nombre} {client.Apellido}
-                      </MenuItem>
-                    ))}
-                  </Select>
+                  <Autocomplete
+                    options={data}
+                    getOptionLabel={(client) =>
+                      `${client.Nombre} ${client.Apellido}`
+                    }
+                    onChange={(event, newValue) => {
+                      handleChange({
+                        target: {
+                          name: "clientID",
+                          value: newValue ? newValue.ClienteID : "",
+                        },
+                      });
+                    }}
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        variant="filled"
+                        name="clientID"
+                        label="Nombre del cliente"
+                        onBlur={handleBlur}
+                        error={!!touched.clientID && !!errors.clientID}
+                        helperText={touched.clientID && errors.clientID}
+                      />
+                    )}
+                  />
                 </FormControl>
                 <TextField
                   fullWidth

@@ -122,7 +122,7 @@ const Edit_Form = () => {
         }) => (
           <form onSubmit={handleSubmit}>
             <Box
-              maxWidth="1000px"
+              maxWidth="1100px"
               backgroundColor={colors.primary[400]}
               margin="10px"
               padding="35px 30px"
