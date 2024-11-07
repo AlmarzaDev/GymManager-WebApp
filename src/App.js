@@ -7,10 +7,10 @@ import Topbar from "./scenes/global/Topbar";
 import Sidebar from "./scenes/global/Sidebar";
 import Dashboard from "./scenes/dashboard";
 import Clients from "./scenes/clients";
-// import Contacts from "./scenes/contacts";
 import Invoices from "./scenes/invoices";
 import ClientForm from "./scenes/clientForm";
 import EditForm from "./scenes/editForm";
+import AttendanceForm from "./scenes/attendanceForm";
 import PayForm from "./scenes/payForm";
 import Calendar from "./scenes/calendar";
 import FAQ from "./scenes/faq";
@@ -44,7 +44,7 @@ function App() {
               <Route path="/login" element={<Login />} />
               <Route path="/" element={<Dashboard />} />
               <Route path="/clients" element={<Clients />} />
-              {/* <Route path="/contacts" element={<Contacts />} /> */}
+              <Route path="/attendance" element={<AttendanceForm />} />
               <Route path="/invoices" element={<Invoices />} />
               <Route path="/form" element={<ClientForm />} />
               <Route path="/edit" element={<EditForm />} />

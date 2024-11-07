@@ -12,72 +12,62 @@ import {
 import { Formik } from "formik";
 import * as yup from "yup";
 import axios from "axios";
-import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
-import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
-import dayjs from "dayjs";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import Header from "../../components/Header";
 import { tokens } from "../../theme";
 
-const initialValues = {
-  clientID: "",
-  amount: "",
-  date: dayjs(),
-};
+const initialValues = { clientID: "" };
+const userSchema = yup
+  .object()
+  .shape({ clientID: yup.string().required("Requerido.") });
 
-const userSchema = yup.object().shape({
-  clientID: yup.string().required("Requerido."),
-  amount: yup.number().required("Requerido."),
-  date: yup.mixed().required("Requerido."),
-});
-
-const PayForm = () => {
+const AttendanceForm = () => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
   const isNonMobile = useMediaQuery("(min-width:600px)");
 
   const [data, setData] = React.useState([]);
+  const [clientStatus, setClientStatus] = React.useState({});
+  const [snackbarState, setSnackbarState] = React.useState({
+    open: false,
+    message: "",
+  });
+
   React.useEffect(() => {
     axios
       .get("http://localhost:5000/get_clients")
       .then((res) => {
         setData(res.data);
+        const statusMap = {};
+        res.data.forEach((client) => {
+          statusMap[client.ClienteID] = client.Registrado === 1;
+        });
+        setClientStatus(statusMap);
       })
       .catch((err) => console.log(err));
   }, []);
 
-  const [snackbarState, setSnackbarState] = React.useState({
-    open: false,
-    message: "",
-  });
-  const handleSnackbar = (message) => {
-    setSnackbarState({
-      open: true,
-      message,
-    });
-  };
-  const handleClose = () => {
-    setSnackbarState({
-      ...snackbarState,
-      open: false,
-    });
+  const handleSnackbar = (message) => setSnackbarState({ open: true, message });
+  const handleClose = () => setSnackbarState({ ...snackbarState, open: false });
+
+  const handleCheckIn = (clientID) => {
+    axios
+      .post("http://localhost:5000/attendance/checkin", { clientID })
+      .then(() => {
+        setClientStatus({ ...clientStatus, [clientID]: true });
+        handleSnackbar("Entrada registrada exitosamente!");
+      })
+      .catch(() => handleSnackbar("Error al registrar entrada."));
   };
 
-  const handleFormSubmit = (values, onSubmitProps) => {
-    console.log(values);
+  const handleCheckOut = (clientID) => {
     axios
-      .post("http://localhost:5000/add_payment", values)
-      .then((res) => {
-        console.log("Everything went well!");
-        console.log(res);
-        onSubmitProps.resetForm();
-        handleSnackbar("Pago procesado exitosamente!");
+      .post("http://localhost:5000/attendance/checkout", { clientID })
+      .then(() => {
+        setClientStatus({ ...clientStatus, [clientID]: false });
+        handleSnackbar("Salida registrada exitosamente!");
       })
-      .catch((err) => {
-        console.log(err);
-        onSubmitProps.resetForm();
-        handleSnackbar("Algo salio mal.");
-      });
+      .catch(() => handleSnackbar("Error al registrar salida."));
   };
 
   return (
@@ -91,12 +81,11 @@ const PayForm = () => {
         TransitionComponent={Slide}
       />
 
-      <Header title="HACER UN PAGO" subtitle="Procesa el pago de un cliente" />
-      <Formik
-        onSubmit={handleFormSubmit}
-        initialValues={initialValues}
-        validationSchema={userSchema}
-      >
+      <Header
+        title="REGISTRAR ASISTENCIA"
+        subtitle="Registrar entrada o salida de un cliente"
+      />
+      <Formik initialValues={initialValues} validationSchema={userSchema}>
         {({
           values,
           errors,
@@ -105,7 +94,7 @@ const PayForm = () => {
           handleChange,
           handleSubmit,
         }) => (
-          <form onSubmit={handleSubmit}>
+          <form onSubmit={(e) => e.preventDefault()}>
             <Box
               maxWidth="1100px"
               backgroundColor={colors.primary[400]}
@@ -148,38 +137,26 @@ const PayForm = () => {
                     )}
                   />
                 </FormControl>
-                <TextField
-                  fullWidth
-                  variant="filled"
-                  type="number"
-                  name="amount"
-                  label="Monto"
-                  onBlur={handleBlur}
-                  onChange={handleChange}
-                  value={values.amount}
-                  error={!!touched.amount && !!errors.amount}
-                  helperText={touched.amount && errors.amount}
-                  sx={{ gridColumn: "span 2" }}
-                />
-                <LocalizationProvider dateAdapter={AdapterDayjs}>
-                  <DatePicker
-                    fullWidth
-                    type="date"
-                    name="date"
-                    label="Fecha"
-                    value={values.date}
-                    onChange={(newValue) => {
-                      handleChange({
-                        target: { name: "date", value: newValue },
-                      });
-                    }}
-                    sx={{ gridColumn: "span 2" }}
-                  />
-                </LocalizationProvider>
               </Box>
-              <Box display="flex" justifyContent="end" mt="30px">
-                <Button type="submit" color="secondary" variant="contained">
-                  Procesar pago
+              <Box display="flex" justifyContent="flex-end" mt="20px">
+                <Button
+                  type="button"
+                  variant="contained"
+                  color="secondary"
+                  sx={{ mr: "30px" }}
+                  disabled={clientStatus[values.clientID]}
+                  onClick={() => handleCheckIn(values.clientID)}
+                >
+                  Registrar Entrada
+                </Button>
+                <Button
+                  type="button"
+                  variant="contained"
+                  color="secondary"
+                  disabled={!clientStatus[values.clientID]}
+                  onClick={() => handleCheckOut(values.clientID)}
+                >
+                  Registrar Salida
                 </Button>
               </Box>
             </Box>
@@ -190,4 +167,4 @@ const PayForm = () => {
   );
 };
 
-export default PayForm;
+export default AttendanceForm;

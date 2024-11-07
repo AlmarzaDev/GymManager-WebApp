@@ -37,7 +37,7 @@ const userSchema = yup.object().shape({
   date: yup.mixed().required("Requerido."),
 });
 
-const Edit_Form = () => {
+const EditForm = () => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
   const location = useLocation();
@@ -270,4 +270,4 @@ const Edit_Form = () => {
   );
 };
 
-export default Edit_Form;
+export default EditForm;

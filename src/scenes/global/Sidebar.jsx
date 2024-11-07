@@ -8,10 +8,10 @@ import {
   HomeOutlined,
   MenuOutlined,
   PeopleOutlined,
-  ContactsOutlined,
   ReceiptOutlined,
-  PersonOutlined,
+  PersonAddOutlined,
   PaymentsOutlined,
+  AddAlarmOutlined,
   CalendarTodayOutlined,
   HelpOutlined,
   BarChartOutlined,
@@ -119,7 +119,7 @@ const Sidebar = () => {
           {/* Menu items */}
           <Box paddingLeft={isCollapsed ? undefined : "10%"}>
             <Item
-              title="Dashboard"
+              title="Panel de control"
               to="/"
               icon={<HomeOutlined />}
               selected={selected}
@@ -130,7 +130,7 @@ const Sidebar = () => {
               color={colors.grey[300]}
               sx={{ m: "15px 0 5px 21px" }}
             >
-              Data
+              Info
             </Typography>
             <Item
               title="Clientes"
@@ -139,13 +139,6 @@ const Sidebar = () => {
               selected={selected}
               setSelected={setSelected}
             />
-            {/* <Item
-              title="Contactos"
-              to="/contacts"
-              icon={<ContactsOutlined />}
-              selected={selected}
-              setSelected={setSelected}
-            /> */}
             <Item
               title="Facturas"
               to="/invoices"
@@ -158,12 +151,12 @@ const Sidebar = () => {
               color={colors.grey[300]}
               sx={{ m: "15px 0 5px 12px" }}
             >
-              Paginas
+              Utilidad
             </Typography>
             <Item
-              title="Añadir cliente"
+              title="Crear cliente"
               to="/form"
-              icon={<PersonOutlined />}
+              icon={<PersonAddOutlined />}
               selected={selected}
               setSelected={setSelected}
             />
@@ -174,6 +167,14 @@ const Sidebar = () => {
               selected={selected}
               setSelected={setSelected}
             />
+            <Item
+              title="Registrar asistencia"
+              to="/attendance"
+              icon={<AddAlarmOutlined />}
+              selected={selected}
+              setSelected={setSelected}
+            />
+
             <Item
               title="Calendario"
               to="/calendar"

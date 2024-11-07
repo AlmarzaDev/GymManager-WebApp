@@ -47,7 +47,7 @@ const clientSchema = yup.object().shape({
   date: yup.mixed().required("Requerido."),
 });
 
-const Client_Form = () => {
+const ClientForm = () => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
   const [snackbarState, setSnackbarState] = React.useState({
@@ -255,4 +255,4 @@ const Client_Form = () => {
   );
 };
 
-export default Client_Form;
+export default ClientForm;

@@ -62,7 +62,7 @@ const Clients = () => {
   };
 
   const columns = [
-    { field: "Cedula", headerName: "Cedula" },
+    { field: "Cedula", headerName: "Cedula", flex: 0.6 },
     {
       field: "Nombre",
       headerName: "Nombre",
