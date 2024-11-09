@@ -1,0 +1,12 @@
+make charts work 4h / 4h
+connect the database to the dashboard 1h
+update payForm so it takes into account months paid for - use selector 1h
+update attendanceForm to add important info to it 30min
+update payForm to add Cedula and other info to form (e) 30min
+update the clients and invoices tables to look better and display more important info (e) 6h
+make calendar work 6h
+update app palette properly this time. 2h
+make a simple user system, complete with image and account editing 6h
+add image to login 30min
+
+rough total ~30h

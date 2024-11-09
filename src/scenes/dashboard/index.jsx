@@ -1,6 +1,8 @@
+import { useState, useEffect } from "react";
 import { Box, Button, IconButton, Typography, useTheme } from "@mui/material";
 import { tokens } from "../../theme";
-import { mockTransactions } from "../../data/mockData";
+import axios from "axios";
+import dayjs from "dayjs";
 import {
   DownloadOutlined,
   AttachMoney,
@@ -17,6 +19,55 @@ import ProgressCircle from "../../components/ProgressCircle";
 const Dashboard = () => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
+  const [data, setData] = useState([]);
+  const [paymentData, setPaymentData] = useState([]);
+
+  useEffect(() => {
+    axios
+      .get("http://localhost:5000/dashboardData")
+      .then((res) => {
+        setData(res.data);
+      })
+      .catch((err) => console.log(err));
+  }, []);
+
+  useEffect(() => {
+    axios
+      .get("http://localhost:5000/recentPayments")
+      .then((response) => {
+        const formattedData = response.data.map((item) => ({
+          ...item,
+          PagoID: item.PagoID.substring(0, 18),
+          FechaPago: dayjs(item.FechaPago).format("DD/MM"),
+        }));
+        setPaymentData(formattedData);
+      })
+      .catch((err) => console.log(err));
+  }, []);
+
+  let NewClientPercentage;
+  if (data.TotalClientsCount > 0) {
+    NewClientPercentage = (
+      (data.NewClientsCount / data.TotalClientsCount) *
+      100
+    ).toFixed(0);
+  }
+
+  let PendingPaymentsPercentage;
+  if (data.MonthlyPaymentsCount > 0) {
+    PendingPaymentsPercentage = (
+      (data.PendingPaymentsCount / data.MonthlyPaymentsCount) *
+      100
+    ).toFixed(0);
+  }
+
+  let ActiveUserPercentage;
+  if (data.TotalClientsCount > 0) {
+    ActiveUserPercentage = (
+      (data.ActiveClients / data.TotalClientsCount) *
+      100
+    ).toFixed(0);
+  }
 
   return (
     <Box m="30px">
@@ -60,10 +111,9 @@ const Dashboard = () => {
           borderRadius="4px"
         >
           <StatBox
-            title="526"
+            title={data.TotalClientsCount}
             subtitle="Clientes Totales"
-            progress="0.11"
-            increase="+11%"
+            extra={false}
             icon={
               <Person
                 sx={{ color: colors.greenAccent[600], fontSize: "26px" }}
@@ -80,8 +130,9 @@ const Dashboard = () => {
           borderRadius="4px"
         >
           <StatBox
-            title="449"
+            title={data.MonthlyPaymentsCount}
             subtitle="Pagos Mensuales"
+            extra={true}
             progress="0.26"
             increase="+26%"
             icon={
@@ -100,10 +151,11 @@ const Dashboard = () => {
           borderRadius="4px"
         >
           <StatBox
-            title="104"
+            title={data.NewClientsCount}
             subtitle="Nuevos Clientes"
-            progress="0.19"
-            increase="+19%"
+            extra={true}
+            progress={`0.${NewClientPercentage}`}
+            increase={`+${NewClientPercentage}%`}
             icon={
               <PersonAdd
                 sx={{ color: colors.greenAccent[600], fontSize: "26px" }}
@@ -120,10 +172,11 @@ const Dashboard = () => {
           borderRadius="4px"
         >
           <StatBox
-            title="53"
+            title={data.PendingPaymentsCount}
             subtitle="Pagos Pendientes"
-            progress="0.47"
-            increase="-63%"
+            extra={true}
+            progress={`0.${PendingPaymentsPercentage}`}
+            increase={`+${PendingPaymentsPercentage}%`}
             icon={
               <MoneyOff
                 sx={{ color: colors.greenAccent[600], fontSize: "26px" }}
@@ -159,7 +212,7 @@ const Dashboard = () => {
                 fontWeight="bold"
                 color={colors.greenAccent[500]}
               >
-                $6,735
+                ${data.YearlyPaymentsAmount}
               </Typography>
             </Box>
             <Box>
@@ -193,9 +246,9 @@ const Dashboard = () => {
               Pagos Recientes
             </Typography>
           </Box>
-          {mockTransactions.map((transaction, i) => (
+          {paymentData.map((payment, i) => (
             <Box
-              key={`${transaction.txId}-${i}`}
+              key={`${payment.PagoID}-${i}`}
               display="flex"
               justifyContent="space-between"
               alignItems="center"
@@ -207,21 +260,23 @@ const Dashboard = () => {
                   color={colors.greenAccent[500]}
                   variant="h5"
                   fontWeight="600"
-                  maxWidth="50px"
+                  maxWidth="150px"
                 >
-                  {transaction.user}
+                  {payment.Nombre} {payment.Apellido}{" "}
                 </Typography>
                 <Typography color={colors.grey[100]}>
-                  {transaction.txId}
+                  {payment.PagoID}
                 </Typography>
               </Box>
-              <Box color={colors.grey[100]}>{transaction.date}</Box>
+              <Box color={colors.grey[100]} fontWeight="600">
+                {payment.FechaPago}
+              </Box>{" "}
               <Box
                 backgroundColor={colors.greenAccent[500]}
                 p="5px 10px"
                 borderRadius="4px"
               >
-                ${transaction.cost}
+                ${payment.Monto}
               </Box>
             </Box>
           ))}
@@ -244,13 +299,13 @@ const Dashboard = () => {
             alignItems="center"
             mt="25px"
           >
-            <ProgressCircle size="125" />
+            <ProgressCircle progress={"0." + ActiveUserPercentage} size="125" />
             <Typography
               variant="h5"
               color={colors.greenAccent[500]}
               sx={{ mt: "15px" }}
             >
-              85% de los miembros registrados siguen activos
+              {ActiveUserPercentage}% de los clientes registrados siguen activos
             </Typography>
           </Box>
         </Box>
@@ -265,7 +320,7 @@ const Dashboard = () => {
             fontWeight="600"
             sx={{ padding: "30px 30px 0 30px" }}
           >
-            Estadisticas de clientes
+            Estadisticas de las asistencias
           </Typography>
           <Box height="250px" mt="-20px">
             <BarChart isDashboard={true} />

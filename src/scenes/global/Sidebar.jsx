@@ -194,22 +194,8 @@ const Sidebar = () => {
               color={colors.grey[300]}
               sx={{ m: "15px 0 5px 12px" }}
             >
-              Graficos
+              Gráficos
             </Typography>
-            <Item
-              title="Gráfico de barras"
-              to="/bar"
-              icon={<BarChartOutlined />}
-              selected={selected}
-              setSelected={setSelected}
-            />
-            <Item
-              title="Gráfico circular"
-              to="/pie"
-              icon={<PieChartOutlined />}
-              selected={selected}
-              setSelected={setSelected}
-            />
             <Item
               title="Gráfico de líneas"
               to="/line"
@@ -217,6 +203,20 @@ const Sidebar = () => {
               selected={selected}
               setSelected={setSelected}
             />
+            <Item
+              title="Gráfico de barras"
+              to="/bar"
+              icon={<BarChartOutlined />}
+              selected={selected}
+              setSelected={setSelected}
+            />
+            {/* <Item
+              title="Gráfico circular"
+              to="/pie"
+              icon={<PieChartOutlined />}
+              selected={selected}
+              setSelected={setSelected}
+            /> */}
           </Box>
         </Menu>
       </ProSidebar>

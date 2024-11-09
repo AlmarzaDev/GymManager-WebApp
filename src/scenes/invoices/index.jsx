@@ -5,6 +5,7 @@ import axios from "axios";
 import { esES } from "@mui/x-data-grid/locales";
 import { tokens } from "../../theme";
 import Header from "../../components/Header.jsx";
+import dayjs from "dayjs";
 
 const Invoices = () => {
   const theme = useTheme();
@@ -13,8 +14,12 @@ const Invoices = () => {
   useEffect(() => {
     axios
       .get("http://localhost:5000/get_payments")
-      .then((res) => {
-        setData(res.data);
+      .then((response) => {
+        const formattedData = response.data.map((item) => ({
+          ...item,
+          FechaPago: dayjs(item.FechaPago).format("MM/DD/YYYY"),
+        }));
+        setData(formattedData);
       })
       .catch((err) => console.log(err));
   }, []);

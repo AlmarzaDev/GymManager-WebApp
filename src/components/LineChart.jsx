@@ -1,11 +1,26 @@
+import { useState, useEffect } from "react";
 import { ResponsiveLine } from "@nivo/line";
 import { useTheme } from "@mui/material";
 import { tokens } from "../theme";
-import { mockLineData as data } from "../data/mockData";
+import axios from "axios";
 
 const LineChart = ({ isCustomLineColors = false, isDashboard = false }) => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
+  const [data, setData] = useState([]);
+
+  useEffect(() => {
+    axios
+      .get("http://localhost:5000/get_payments/lineData")
+      .then((response) => {
+        const formattedData = response.data.map((item) => ({
+          x: item.month,
+          y: item.total_revenue,
+        }));
+        setData([{ id: "Ganancias", data: formattedData }]);
+      })
+      .catch((err) => console.log(err));
+  }, []);
 
   return (
     <ResponsiveLine
@@ -43,7 +58,7 @@ const LineChart = ({ isCustomLineColors = false, isDashboard = false }) => {
           },
         },
       }}
-      colors={isDashboard ? { datum: "color" } : { scheme: "nivo" }}
+      colors={{ scheme: "set2" }}
       margin={{ top: 50, right: 110, bottom: 50, left: 60 }}
       xScale={{ type: "point" }}
       yScale={{
@@ -54,15 +69,13 @@ const LineChart = ({ isCustomLineColors = false, isDashboard = false }) => {
         reverse: false,
       }}
       yFormat=" >-.2f"
-      curve="catmullRom"
-      axisTop={null}
-      axisRight={null}
+      curve="natural"
       axisBottom={{
         orient: "bottom",
         tickSize: 0,
         tickPadding: 5,
         tickRotation: 0,
-        legend: isDashboard ? undefined : "TRANSPORTE",
+        legend: isDashboard ? undefined : "Mes",
         legendOffset: 36,
         legendPosition: "middle",
       }}
@@ -72,13 +85,13 @@ const LineChart = ({ isCustomLineColors = false, isDashboard = false }) => {
         tickSize: 3,
         tickPadding: 5,
         tickRotation: 0,
-        legend: isDashboard ? undefined : "CANTIDAD",
+        legend: isDashboard ? undefined : "Cantidad",
         legendOffset: -40,
         legendPosition: "middle",
       }}
       enableGridX={false}
       enableGridY={false}
-      pointSize={8}
+      pointSize={10}
       pointColor={{ theme: "background" }}
       pointBorderWidth={2}
       pointBorderColor={{ from: "serieColor" }}

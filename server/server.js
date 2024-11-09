@@ -163,21 +163,10 @@ app.post("/attendance/checkout", (req, res) => {
   );
 });
 
-app.get("/attendance/status", (req, res) => {
-  const sql =
-    "SELECT ClienteID, Registrado FROM asistencias WHERE FechaAsistencia = ?";
-  const values = [dayjs().format("YYYY-MM-DD")];
-
-  db.query(sql, values, (err, result) => {
-    if (err) return res.json({ message: "Error del servidor" });
-    return res.json(result);
-  });
-});
-
 app.get("/get_clients", (req, res) => {
   const sql = "SELECT * FROM clientes";
   db.query(sql, (err, result) => {
-    if (err) res.json({ message: "Error del servidor" });
+    if (err) res.json({ message: "Error del servidor" + err });
     return res.json(result);
   });
 });
@@ -186,16 +175,98 @@ app.get("/get_payments", (req, res) => {
   const sql =
     "SELECT * FROM clientes JOIN pagos ON clientes.ClienteID = pagos.ClienteID";
   db.query(sql, (err, result) => {
-    if (err) res.json({ message: "Error del servidor" });
+    if (err) res.json({ message: "Error del servidor" + err });
     return res.json(result);
   });
 });
 
-app.get("/attendance", (req, res) => {
+app.get("/get_payments/lineData", (req, res) => {
+  const sql = `
+      SELECT DATE_FORMAT(FechaPago, '%m-%Y') AS month,
+        SUM(Monto) AS total_revenue
+      FROM pagos
+      GROUP BY month
+      ORDER BY month;
+    `;
+  db.query(sql, (err, result) => {
+    if (err) return res.json({ message: "Error del servidor" + err });
+    return res.json(result);
+  });
+});
+
+app.get("/get_attendance", (req, res) => {
   const sql =
     "SELECT * FROM clientes JOIN asistencias ON clientes.ClienteID = asistencias.ClienteID";
   db.query(sql, (err, result) => {
-    if (err) res.json({ message: "Error del servidor" });
+    if (err) res.json({ message: "Error del servidor" + err });
+    return res.json(result);
+  });
+});
+
+app.get("/get_attendance/status", (req, res) => {
+  const sql =
+    "SELECT ClienteID, Registrado FROM asistencias WHERE FechaAsistencia = ?";
+  const values = [dayjs().format("YYYY-MM-DD")];
+
+  db.query(sql, values, (err, result) => {
+    if (err) return res.json({ message: "Error del servidor" + err });
+    return res.json(result);
+  });
+});
+
+app.get("/get_attendance/barData", (req, res) => {
+  const sql = `
+      SELECT DATE(FechaAsistencia) AS date,
+        COUNT(*) AS "Asistencias"
+      FROM asistencias
+      WHERE FechaAsistencia >= CURDATE() - INTERVAL 7 DAY
+      GROUP BY date
+      ORDER BY date;
+    `;
+  db.query(sql, (err, result) => {
+    if (err) return res.json({ message: "Error del servidor" + err });
+    return res.json(result);
+  });
+});
+
+app.get("/dashboardData", (req, res) => {
+  const sql = `
+    SELECT 
+      (SELECT COUNT(ClienteID) FROM clientes) AS TotalClientsCount,
+      (SELECT COUNT(ClienteID) FROM clientes WHERE FechaRegistro >= CURDATE() - INTERVAL 30 DAY) AS NewClientsCount,
+      (SELECT COUNT(PagoID) FROM pagos WHERE FechaPago >= CURDATE() - INTERVAL 30 DAY) AS MonthlyPaymentsCount,
+      (SELECT SUM(Monto) FROM pagos WHERE FechaPago >= CURDATE() - INTERVAL 1 YEAR) AS YearlyPaymentsAmount,
+      (SELECT COUNT(*) FROM (
+        SELECT c.ClienteID
+        FROM clientes c
+        LEFT JOIN pagos p ON c.ClienteID = p.ClienteID 
+        GROUP BY c.ClienteID
+        HAVING MAX(p.FechaPago) < CURDATE() - INTERVAL 30 DAY OR MAX(p.FechaPago) IS NULL
+      ) AS PendingPayments) AS PendingPaymentsCount,
+      (SELECT COUNT(DISTINCT ClienteID) FROM asistencias WHERE FechaAsistencia >= CURDATE() - INTERVAL 14 DAY) AS ActiveClients;
+    `;
+  db.query(sql, (err, result) => {
+    if (err) return res.json({ message: "Error del servidor" + err });
+    return res.json(result[0]);
+  });
+});
+
+app.get("/recentPayments", (req, res) => {
+  const sql = `
+    SELECT 
+      p.PagoID,
+      p.ClienteID,
+      p.Monto,
+      p.FechaPago,
+      c.Nombre,
+      c.Apellido
+    FROM pagos p
+    JOIN clientes c ON p.ClienteID = c.ClienteID
+    WHERE p.FechaPago >= CURDATE() - INTERVAL 7 DAY
+    ORDER BY p.FechaPago DESC;
+  `;
+  db.query(sql, (err, result) => {
+    if (err) return res.json({ message: "Error del servidor" + err });
     return res.json(result);
   });
 });
