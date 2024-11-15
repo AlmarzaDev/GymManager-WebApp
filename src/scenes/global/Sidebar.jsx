@@ -15,7 +15,6 @@ import {
   CalendarTodayOutlined,
   HelpOutlined,
   BarChartOutlined,
-  PieChartOutlined,
   TimelineOutlined,
 } from "@mui/icons-material";
 
@@ -95,7 +94,7 @@ const Sidebar = () => {
                   alt="profile-user"
                   width="100px"
                   height="100px"
-                  src={`../../assets/user.png`}
+                  src={`../../assets/user.jpeg`}
                   style={{ cursor: "pointer", borderRadius: "50%" }}
                 />
               </Box>
@@ -107,7 +106,7 @@ const Sidebar = () => {
                   fontWeight="bold"
                   sx={{ m: "10px 0 0 0" }}
                 >
-                  Donfernando
+                  Usuario
                 </Typography>
                 <Typography variant="h5" color={colors.greenAccent[400]}>
                   Admin
@@ -154,14 +153,14 @@ const Sidebar = () => {
               Utilidad
             </Typography>
             <Item
-              title="Crear cliente"
+              title="Añadir cliente"
               to="/form"
               icon={<PersonAddOutlined />}
               selected={selected}
               setSelected={setSelected}
             />
             <Item
-              title="Hacer un pago"
+              title="Procesar pago"
               to="/pay"
               icon={<PaymentsOutlined />}
               selected={selected}

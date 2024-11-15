@@ -5,9 +5,11 @@ import {
   FormControl,
   Autocomplete,
   TextField,
+  Typography,
   useTheme,
   Snackbar,
   Slide,
+  Slider,
 } from "@mui/material";
 import { Formik } from "formik";
 import * as yup from "yup";
@@ -21,29 +23,54 @@ import { tokens } from "../../theme";
 
 const initialValues = {
   clientID: "",
+  cedula: "",
+  debt: "",
+  lastPaymentDate: "",
+  membershipEndDate: "",
   amount: "",
   date: dayjs(),
+  paidMonths: 0,
 };
 
 const userSchema = yup.object().shape({
   clientID: yup.string().required("Requerido."),
   amount: yup.number().required("Requerido."),
   date: yup.mixed().required("Requerido."),
+  paidMonths: yup.number().required("Requerido."),
 });
+
+const monthMarks = [
+  { value: 0, label: "0" },
+  { value: 1, label: "1" },
+  { value: 3, label: "3" },
+  { value: 6, label: "6" },
+  { value: 12, label: "12" },
+];
 
 const PayForm = () => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
   const isNonMobile = useMediaQuery("(min-width:600px)");
 
-  const [data, setData] = React.useState([]);
-  React.useEffect(() => {
+  const [clientData, setClientData] = React.useState([]);
+
+  const getClients = () => {
     axios
       .get("http://localhost:5000/get_clients")
       .then((res) => {
-        setData(res.data);
+        const formattedData = res.data.map((item) => ({
+          ...item,
+          UltimaFechaPago: dayjs(item.UltimaFechaPago).format("MM/DD/YYYY"),
+          FechaFinMembresia: dayjs(item.FechaFinMembresia).format("MM/DD/YYYY"),
+        }));
+        setClientData(formattedData);
+        console.log(formattedData);
       })
       .catch((err) => console.log(err));
+  };
+
+  React.useEffect(() => {
+    getClients();
   }, []);
 
   const [snackbarState, setSnackbarState] = React.useState({
@@ -64,14 +91,21 @@ const PayForm = () => {
   };
 
   const handleFormSubmit = (values, onSubmitProps) => {
-    console.log(values);
+    const { clientID, amount, date, paidMonths } = values;
+
     axios
-      .post("http://localhost:5000/add_payment", values)
+      .post("http://localhost:5000/add_payment", {
+        clientID,
+        amount,
+        date: dayjs(date).format("YYYY-MM-DD"),
+        paidMonths,
+      })
       .then((res) => {
-        console.log("Everything went well!");
         console.log(res);
         onSubmitProps.resetForm();
+        onSubmitProps.setFieldValue("clientID", "");
         handleSnackbar("Pago procesado exitosamente!");
+        getClients();
       })
       .catch((err) => {
         console.log(err);
@@ -91,7 +125,7 @@ const PayForm = () => {
         TransitionComponent={Slide}
       />
 
-      <Header title="HACER UN PAGO" subtitle="Procesa el pago de un cliente" />
+      <Header title="PROCESAR PAGO" subtitle="Produce el pago de un cliente" />
       <Formik
         onSubmit={handleFormSubmit}
         initialValues={initialValues}
@@ -104,6 +138,7 @@ const PayForm = () => {
           handleBlur,
           handleChange,
           handleSubmit,
+          setFieldValue,
         }) => (
           <form onSubmit={handleSubmit}>
             <Box
@@ -121,19 +156,34 @@ const PayForm = () => {
                   "& > div": { gridColumn: isNonMobile ? undefined : "span 4" },
                 }}
               >
-                <FormControl sx={{ gridColumn: "span 4" }}>
+                <FormControl sx={{ gridColumn: "span 2" }}>
                   <Autocomplete
-                    options={data}
+                    options={clientData}
                     getOptionLabel={(client) =>
                       `${client.Nombre} ${client.Apellido}`
                     }
+                    value={
+                      values.clientID
+                        ? clientData.find(
+                            (client) => client.ClienteID === values.clientID
+                          )
+                        : null
+                    }
                     onChange={(event, newValue) => {
-                      handleChange({
-                        target: {
-                          name: "clientID",
-                          value: newValue ? newValue.ClienteID : "",
-                        },
-                      });
+                      setFieldValue(
+                        "clientID",
+                        newValue ? newValue.ClienteID : ""
+                      );
+                      setFieldValue("cedula", newValue ? newValue.Cedula : "");
+                      setFieldValue("debt", newValue ? newValue.Deuda : "");
+                      setFieldValue(
+                        "lastPaymentDate",
+                        newValue ? newValue.UltimaFechaPago : ""
+                      );
+                      setFieldValue(
+                        "membershipEndDate",
+                        newValue ? newValue.FechaFinMembresia : ""
+                      );
                     }}
                     renderInput={(params) => (
                       <TextField
@@ -148,6 +198,38 @@ const PayForm = () => {
                     )}
                   />
                 </FormControl>
+                <TextField
+                  disabled
+                  type="text"
+                  name="cedula"
+                  label="Cédula"
+                  value={values.cedula}
+                  sx={{ gridColumn: "span 2" }}
+                />
+                <TextField
+                  disabled
+                  type="text"
+                  name="debt"
+                  label="Deuda"
+                  value={values.debt}
+                  sx={{ gridColumn: "span 2" }}
+                />
+                <TextField
+                  disabled
+                  type="text"
+                  name="lastPaymentDate"
+                  label="Última fecha de pago"
+                  value={values.lastPaymentDate}
+                  sx={{ gridColumn: "span 1" }}
+                />
+                <TextField
+                  disabled
+                  type="text"
+                  name="membershipEndDate"
+                  label="Finalización de la membresía"
+                  value={values.membershipEndDate}
+                  sx={{ gridColumn: "span 1" }}
+                />
                 <TextField
                   fullWidth
                   variant="filled"
@@ -169,13 +251,28 @@ const PayForm = () => {
                     label="Fecha"
                     value={values.date}
                     onChange={(newValue) => {
-                      handleChange({
-                        target: { name: "date", value: newValue },
-                      });
+                      setFieldValue("date", newValue);
                     }}
                     sx={{ gridColumn: "span 2" }}
                   />
                 </LocalizationProvider>
+                <Box sx={{ gridColumn: "span 2", margin: "-10px 10px" }}>
+                  <Typography variant="subtitle1">Meses Pagados</Typography>
+                  <Slider
+                    name="paidMonths"
+                    value={values.paidMonths}
+                    onChange={(e, newValue) =>
+                      setFieldValue("paidMonths", newValue)
+                    }
+                    step={1}
+                    marks={monthMarks}
+                    min={0}
+                    max={12}
+                    valueLabelDisplay="auto"
+                    color="secondary"
+                    sx={{ gridColumn: "span 2" }}
+                  />
+                </Box>
               </Box>
               <Box display="flex" justifyContent="end" mt="30px">
                 <Button type="submit" color="secondary" variant="contained">

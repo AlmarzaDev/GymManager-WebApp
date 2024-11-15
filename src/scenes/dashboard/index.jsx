@@ -45,6 +45,14 @@ const Dashboard = () => {
       .catch((err) => console.log(err));
   }, []);
 
+  let MonthlyPaymentsPercentage;
+  if (data.YearlyPaymentsCount > 0) {
+    MonthlyPaymentsPercentage = (
+      (data.MonthlyPaymentsCount / data.YearlyPaymentsCount) *
+      100
+    ).toFixed(0);
+  }
+
   let NewClientPercentage;
   if (data.TotalClientsCount > 0) {
     NewClientPercentage = (
@@ -133,8 +141,8 @@ const Dashboard = () => {
             title={data.MonthlyPaymentsCount}
             subtitle="Pagos Mensuales"
             extra={true}
-            progress="0.26"
-            increase="+26%"
+            progress={`0.${MonthlyPaymentsPercentage}`}
+            increase={`+${MonthlyPaymentsPercentage}%`}
             icon={
               <AttachMoney
                 sx={{ color: colors.greenAccent[600], fontSize: "26px" }}

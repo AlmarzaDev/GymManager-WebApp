@@ -1,11 +1,20 @@
 import React, { useEffect, useState } from "react";
-import { Box, Button, useTheme, Snackbar, Slide } from "@mui/material";
+import {
+  Box,
+  Button,
+  useTheme,
+  Snackbar,
+  Slide,
+  Typography,
+} from "@mui/material";
+import { Delete, Edit, Warning, CheckCircle } from "@mui/icons-material";
 import { DataGrid } from "@mui/x-data-grid";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { esES } from "@mui/x-data-grid/locales";
 import { tokens } from "../../theme.js";
 import Header from "../../components/Header.jsx";
+import dayjs from "dayjs";
 
 const Clients = () => {
   const theme = useTheme();
@@ -24,7 +33,11 @@ const Clients = () => {
     axios
       .get("http://localhost:5000/get_clients")
       .then((res) => {
-        setData(res.data);
+        const formattedData = res.data.map((item) => ({
+          ...item,
+          FechaFinMembresia: dayjs(item.FechaFinMembresia).format("MM/DD/YYYY"),
+        }));
+        setData(formattedData);
       })
       .catch((err) => console.log(err));
   };
@@ -66,24 +79,18 @@ const Clients = () => {
     {
       field: "Nombre",
       headerName: "Nombre",
-      flex: 1,
+      headerClassName: "table-headers",
+      flex: 0.6,
     },
     {
       field: "Apellido",
       headerName: "Apellido",
-      flex: 1,
-    },
-    {
-      field: "Edad",
-      headerName: "Edad",
-      type: "number",
-      headerAlign: "left",
-      align: "left",
+      flex: 0.6,
     },
     {
       field: "Telefono",
       headerName: "Numero de telefono",
-      flex: 1,
+      flex: 0.8,
     },
     {
       field: "Email",
@@ -96,16 +103,62 @@ const Clients = () => {
       flex: 1,
     },
     {
-      field: "actions",
-      headerName: "Acciones",
+      field: "Deuda",
+      headerName: "Deuda",
+      flex: 0.5,
+    },
+    {
+      field: "FechaFinMembresia",
+      headerName: "Finalizacion de membresia",
       flex: 1,
       renderCell: ({ row }) => {
+        const today = dayjs();
+        const currentEndDate = dayjs(row.FechaFinMembresia);
+        const isActiveOrNearEnd =
+          currentEndDate.isSame(today) ||
+          currentEndDate.isAfter(today) ||
+          !currentEndDate.diff(today, "month");
+
+        const textColor = isActiveOrNearEnd ? "green" : "red";
+        const IconComponent = isActiveOrNearEnd ? CheckCircle : Warning;
+
         return (
-          <Box width="60%" m="8px auto" display="flex" justifyContent="center">
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              justifySelf: "center",
+              backgroundColor: isActiveOrNearEnd ? "#e8f5e9" : "#ffebee",
+              borderRadius: "12px",
+              padding: "4px 12px",
+              marginTop: "10px",
+            }}
+          >
+            <IconComponent
+              sx={{
+                color: textColor,
+                marginRight: "8px",
+              }}
+            />
+            <Typography variant="body2" sx={{ color: textColor }}>
+              {currentEndDate.format("YYYY-MM-DD")}
+            </Typography>
+          </Box>
+        );
+      },
+    },
+    {
+      field: "actions",
+      headerName: "Acciones",
+      flex: 1.2,
+      renderCell: ({ row }) => {
+        return (
+          <Box width="100%" m="8px auto" display="flex" justifyContent="center">
             <Button
               variant="outlined"
               color="success"
               sx={{ mr: "15px" }}
+              endIcon={<Edit />}
               onClick={() => handleEdit(row)}
             >
               Editar
@@ -113,6 +166,7 @@ const Clients = () => {
             <Button
               variant="outlined"
               color="error"
+              endIcon={<Delete />}
               onClick={() => handleDelete(row.ClienteID)}
             >
               Eliminar
@@ -143,19 +197,18 @@ const Clients = () => {
         height="72vh"
         width="169vh"
         sx={{
-          "& .MuiDataGrid-root": { border: "none" },
-          "& .MuiDataGrid-cell": { borderBottom: "none", fontSize: "14px" },
+          "& .MuiDataGrid-cell": { fontSize: "14px" },
           "& .MuiDataGrid-columnHeader": {
-            borderBottom: "none",
             backgroundColor: colors.greenAccent[600],
             fontSize: "14px",
           },
-          "& .MuiDataGrid-virtualScroller": {
-            backgroundColor: colors.primary[400],
-          },
+
           "& .MuiDataGrid-footerContainer": {
-            borderTop: "none",
             borderRadius: "0 0 6px 6px",
+            backgroundColor: colors.greenAccent[600],
+          },
+
+          "& .MuiDataGrid-scrollbarFiller--header": {
             backgroundColor: colors.greenAccent[600],
           },
         }}
@@ -165,6 +218,7 @@ const Clients = () => {
           columns={columns}
           getRowId={(row) => row.ClienteID}
           localeText={esES.components.MuiDataGrid.defaultProps.localeText}
+          disableRowSelectionOnClick
         />
       </Box>
     </Box>

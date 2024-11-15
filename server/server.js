@@ -35,32 +35,120 @@ app.post("/login", (req, res) => {
 });
 
 app.post("/add_client", (req, res) => {
-  sql =
-    "INSERT INTO clientes (`ClienteID`, `Nombre`, `Apellido`, `Cedula`, `Edad`, `Email`, `Telefono`, `Direccion`, `FechaRegistro`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
-  const id = uuid4v();
-  const values = [
-    id,
-    req.body.firstName,
-    req.body.lastName,
-    req.body.cedula,
-    req.body.age,
-    req.body.email,
-    req.body.contact,
-    req.body.address,
-    req.body.date,
+  const clientID = uuid4v();
+  const {
+    firstName,
+    lastName,
+    cedula,
+    age,
+    email,
+    contact,
+    address,
+    date,
+    abono,
+    paidMonths,
+    preexisting,
+  } = req.body;
+
+  let lastPaymentDate = req.body.lastPaymentDate;
+  lastPaymentDate = undefined
+    ? dayjs(date).format("YYYY-MM-DD")
+    : dayjs(lastPaymentDate).format("YYYY-MM-DD");
+
+  const registrationDate = dayjs(date).format("YYYY-MM-DD");
+  const monthlyFee = 15;
+  const registrationFee = 5;
+  let initialDebt = paidMonths * monthlyFee - abono;
+
+  if (!preexisting) {
+    initialDebt += registrationFee;
+  }
+
+  initialDebt = Math.max(0, initialDebt);
+
+  const clientValues = [
+    clientID,
+    firstName,
+    lastName,
+    cedula,
+    age,
+    email,
+    contact,
+    address,
+    registrationDate,
+    initialDebt,
   ];
-  db.query(sql, values, (err, result) => {
-    if (err)
+
+  const clientSql = `
+    INSERT INTO clientes (ClienteID, Nombre, Apellido, Cedula, Edad, Email, Telefono, Direccion, FechaRegistro, Deuda)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `;
+
+  db.query(clientSql, clientValues, (err, result) => {
+    if (err) {
       return res.json({
-        message: "Algo salio mal agregando el cliente: " + err,
+        message: "Error al agregar el cliente: " + err,
       });
-    return res.json({ success: "Cliente añadido exitosamente!" });
+    }
+
+    const initialPaymentDate = preexisting ? lastPaymentDate : registrationDate;
+
+    const membershipEndDate = dayjs(initialPaymentDate)
+      .add(paidMonths, "month")
+      .format("YYYY-MM-DD");
+
+    const paymentId = uuid4v();
+    const paymentValues = [
+      paymentId,
+      clientID,
+      abono,
+      initialPaymentDate,
+      paidMonths,
+    ];
+
+    const paymentSql = `
+      INSERT INTO pagos (PagoID, ClienteID, Monto, FechaPago, MesesPagados)
+      VALUES (?, ?, ?, ?, ?)
+    `;
+
+    db.query(paymentSql, paymentValues, (err, result) => {
+      if (err) {
+        return res.json({
+          message: "Error al agregar el pago: " + err,
+        });
+      }
+
+      const updateClientSql = `
+        UPDATE clientes
+        SET UltimaFechaPago = ?,
+            FechaFinMembresia = ?
+        WHERE ClienteID = ?
+      `;
+      db.query(
+        updateClientSql,
+        [initialPaymentDate, membershipEndDate, clientID],
+        (err, result) => {
+          if (err) {
+            return res.json({
+              message: "Error al actualizar el cliente: " + err,
+            });
+          }
+
+          return res.json({
+            success: "Cliente y pago añadidos exitosamente!",
+          });
+        }
+      );
+    });
   });
 });
 
 app.put("/edit_client", (req, res) => {
-  sql =
-    "UPDATE clientes SET Nombre = ?, Apellido = ?, Cedula = ?, Edad = ?, Email = ?, Telefono = ?, Direccion = ?, FechaRegistro = ? WHERE ClienteID = ?";
+  const sql = `
+    UPDATE clientes
+    SET Nombre = ?, Apellido = ?, Cedula = ?, Edad = ?, Email = ?, Telefono = ?, Direccion = ?, FechaRegistro = ?, Deuda = ?
+    WHERE ClienteID = ?
+  `;
   const values = [
     req.body.firstName,
     req.body.lastName,
@@ -70,13 +158,16 @@ app.put("/edit_client", (req, res) => {
     req.body.contact,
     req.body.address,
     req.body.date,
+    req.body.debt,
     req.body.ClienteID,
   ];
+
   db.query(sql, values, (err, result) => {
-    if (err)
+    if (err) {
       return res.json({
-        message: "Algo salio mal editando el cliente: " + err,
+        message: "Algo salió mal editando el cliente: " + err,
       });
+    }
     return res.json({ success: "Cliente editado exitosamente!" });
   });
 });
@@ -94,16 +185,79 @@ app.post("/delete_client", (req, res) => {
 });
 
 app.post("/add_payment", (req, res) => {
-  const sql =
-    "INSERT INTO pagos (`PagoID`, `ClienteID`, `Monto`, `FechaPago`) VALUES (?, ?, ?, ?)";
-  const id = uuid4v();
-  const values = [id, req.body.clientID, req.body.amount, req.body.date];
-  db.query(sql, values, (err, result) => {
-    if (err)
+  const paymentId = uuid4v();
+  const { clientID, amount, date, paidMonths = 1 } = req.body;
+  const monthlyFee = 15;
+  const totalCost = paidMonths * monthlyFee;
+  const remainingDebt = totalCost - amount;
+
+  const paymentSql = `
+    INSERT INTO pagos (PagoID, ClienteID, Monto, FechaPago, MesesPagados)
+    VALUES (?, ?, ?, ?, ?)
+  `;
+  const paymentValues = [paymentId, clientID, amount, date, paidMonths];
+
+  db.query(paymentSql, paymentValues, (err, paymentResult) => {
+    if (err) {
       return res.json({
-        message: "Algo salio mal procesando el pago: " + err,
+        message: "Algo salió mal procesando el pago: " + err,
       });
-    return res.json({ success: "Pago procesado exitosamente!" });
+    }
+
+    const getClientSql = `SELECT FechaFinMembresia FROM clientes WHERE ClienteID = ?`;
+    db.query(getClientSql, [clientID], (clientErr, clientResult) => {
+      if (clientErr) {
+        return res.json({
+          message:
+            "Error al obtener la fecha de fin de membresía: " + clientErr,
+        });
+      }
+
+      const currentEndDate = clientResult[0].FechaFinMembresia;
+
+      const today = dayjs();
+      const endDateCondition =
+        dayjs(currentEndDate).isSame(today) ||
+        dayjs(currentEndDate).isAfter(today) ||
+        !dayjs(currentEndDate).diff(today, "month");
+
+      const newEndDate = endDateCondition
+        ? dayjs(currentEndDate).add(paidMonths, "month").format("YYYY-MM-DD")
+        : dayjs(date).add(paidMonths, "month").format("YYYY-MM-DD");
+
+      const updateClientSql = `
+        UPDATE clientes
+        SET 
+          FechaFinMembresia = ?, 
+          UltimaFechaPago = ?,
+          Deuda = CASE
+            WHEN ? > 0 THEN Deuda + ?
+            ELSE GREATEST(Deuda + ?, 0)
+          END
+        WHERE ClienteID = ?
+      `;
+      const updateValues = [
+        newEndDate,
+        date,
+        remainingDebt,
+        remainingDebt,
+        remainingDebt,
+        clientID,
+      ];
+
+      db.query(updateClientSql, updateValues, (updateErr, updateResult) => {
+        if (updateErr) {
+          return res.json({
+            message:
+              "Error actualizando la información del cliente: " + updateErr,
+          });
+        }
+
+        res.json({
+          success: "Pago procesado exitosamente, deuda actualizada",
+        });
+      });
+    });
   });
 });
 
@@ -235,6 +389,7 @@ app.get("/dashboardData", (req, res) => {
       (SELECT COUNT(ClienteID) FROM clientes) AS TotalClientsCount,
       (SELECT COUNT(ClienteID) FROM clientes WHERE FechaRegistro >= CURDATE() - INTERVAL 30 DAY) AS NewClientsCount,
       (SELECT COUNT(PagoID) FROM pagos WHERE FechaPago >= CURDATE() - INTERVAL 30 DAY) AS MonthlyPaymentsCount,
+      (SELECT COUNT(PagoID) FROM pagos WHERE FechaPago >= CURDATE() - INTERVAL 1 YEAR) AS YearlyPaymentsCount,
       (SELECT SUM(Monto) FROM pagos WHERE FechaPago >= CURDATE() - INTERVAL 1 YEAR) AS YearlyPaymentsAmount,
       (SELECT COUNT(*) FROM (
         SELECT c.ClienteID
@@ -268,6 +423,32 @@ app.get("/recentPayments", (req, res) => {
   db.query(sql, (err, result) => {
     if (err) return res.json({ message: "Error del servidor" + err });
     return res.json(result);
+  });
+});
+
+app.get("/events", (req, res) => {
+  const sql = "SELECT * FROM eventos";
+  db.query(sql, (err, result) => {
+    if (err) return res.status(500).json({ error: "Error del servidor" });
+    res.json(result);
+  });
+});
+
+app.post("/events", (req, res) => {
+  const { title, start, end, allDay } = req.body;
+  const sql =
+    "INSERT INTO eventos (title, start, end, allDay) VALUES (?, ?, ?, ?)";
+  db.query(sql, [title, start, end, allDay], (err, result) => {
+    if (err) return res.status(500).json({ error: "Error agregando evento" });
+    res.json({ id: result.insertId, title, start, end, allDay });
+  });
+});
+
+app.delete("/events/:id", (req, res) => {
+  const sql = "DELETE FROM eventos WHERE id = ?";
+  db.query(sql, [req.params.id], (err, result) => {
+    if (err) return res.status(500).json({ error: "Error eliminando evento" });
+    res.json({ message: "Event deleted successfully" });
   });
 });
 

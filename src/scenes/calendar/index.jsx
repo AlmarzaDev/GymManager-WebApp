@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import FullCalendar from "@fullcalendar/react";
 import esLocale from "@fullcalendar/core/locales/es";
 import { formatDate } from "@fullcalendar/core";
@@ -16,33 +16,64 @@ import {
 } from "@mui/material";
 import Header from "../../components/Header";
 import { tokens } from "../../theme";
+import axios from "axios";
 
 const Calendar = () => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
   const [currentEvents, setCurrentEvents] = useState([]);
 
-  const handleDateClick = (selected) => {
+  useEffect(() => {
+    const fetchEvents = async () => {
+      try {
+        const res = await axios.get("http://localhost:5000/events");
+        setCurrentEvents(res.data);
+      } catch (error) {
+        console.error("Error del servidor:", error);
+      }
+    };
+    fetchEvents();
+  }, []);
+
+  const handleDateClick = async (selected) => {
     const title = prompt("Escribe un nombre para este evento");
     const calendarApi = selected.view.calendar;
     calendarApi.unselect();
 
     if (title) {
-      calendarApi.addEvent({
-        id: `${selected.dateStr}-${title}`,
+      const newEvent = {
         title,
         start: selected.startStr,
         end: selected.endStr,
         allDay: selected.allDay,
-      });
+      };
+
+      try {
+        const res = await axios.post("http://localhost:5000/events", newEvent);
+        const savedEvent = res.data;
+        calendarApi.addEvent({
+          id: savedEvent.id,
+          title: savedEvent.title,
+          start: savedEvent.start,
+          end: savedEvent.end,
+          allDay: savedEvent.allDay,
+        });
+      } catch (error) {
+        console.error("Error al guardar el evento:", error);
+      }
     }
   };
 
-  const handleEventClick = (selected) => {
+  const handleEventClick = async (selected) => {
     if (
       window.confirm(`Seguro de eliminar el evento '${selected.event.title}'?`)
     ) {
-      selected.event.remove();
+      try {
+        await axios.delete(`http://localhost:5000/events/${selected.event.id}`);
+        selected.event.remove();
+      } catch (error) {
+        console.error("Error al eliminar el evento:", error);
+      }
     }
   };
 
@@ -106,40 +137,13 @@ const Calendar = () => {
               right: "dayGridMonth,timeGridWeek,timeGridDay,listMonth",
             }}
             initialView="dayGridMonth"
-            editable={true}
+            editable={false}
             selectable={true}
             selectMirror={true}
             dayMaxEvents={true}
             select={handleDateClick}
             eventClick={handleEventClick}
-            eventsSet={(events) => setCurrentEvents(events)}
-            initialEvents={[
-              {
-                id: "4",
-                title: "Estreno de la nueva pelicula",
-                date: "2024-10-09",
-              },
-              {
-                id: "1",
-                title: "Entrega del prototipo de proyecto",
-                date: "2024-10-18",
-              },
-              {
-                id: "2",
-                title: "Examen de ingenieria del software",
-                date: "2024-10-21",
-              },
-              {
-                id: "5",
-                title: "Dia del programador junior",
-                date: "2024-10-21",
-              },
-              {
-                id: "3",
-                title: "Descuento en traki del 40%",
-                date: "2024-10-31",
-              },
-            ]}
+            events={currentEvents}
           />
         </Box>
       </Box>

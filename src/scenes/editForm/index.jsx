@@ -1,12 +1,5 @@
 import * as React from "react";
-import {
-  Box,
-  Button,
-  TextField,
-  useTheme,
-  Snackbar,
-  Slide,
-} from "@mui/material";
+import { Box, Button, TextField, useTheme } from "@mui/material";
 import { Formik } from "formik";
 import * as yup from "yup";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -24,7 +17,7 @@ const userSchema = yup.object().shape({
   firstName: yup.string().required("Requerido."),
   lastName: yup.string().required("Requerido."),
   cedula: yup.string().required("Requerido."),
-  age: yup.string().required("Requerido."),
+  age: yup.number().required("Requerido."),
   email: yup
     .string()
     .email("Correo electronico invalido.")
@@ -35,6 +28,7 @@ const userSchema = yup.object().shape({
     .required("Requerido."),
   address: yup.string().required("Requerido."),
   date: yup.mixed().required("Requerido."),
+  debt: yup.number().required("Requerido."),
 });
 
 const EditForm = () => {
@@ -53,26 +47,8 @@ const EditForm = () => {
     contact: client.Telefono,
     address: client.Direccion,
     date: dayjs(client.FechaRegistro),
+    debt: client.Deuda,
     ClienteID: client.ClienteID,
-  };
-
-  const [snackbarState, setSnackbarState] = React.useState({
-    open: false,
-    message: "",
-  });
-
-  const handleSnackbar = (message) => {
-    setSnackbarState({
-      open: true,
-      message,
-    });
-  };
-
-  const handleClose = () => {
-    setSnackbarState({
-      ...snackbarState,
-      open: false,
-    });
   };
 
   const isNonMobile = useMediaQuery("(min-width:600px)");
@@ -82,26 +58,15 @@ const EditForm = () => {
       .put("http://localhost:5000/edit_client", values)
       .then((res) => {
         console.log(res);
-        handleSnackbar("Cliente editado exitosamente!");
         navigate("/clients");
       })
       .catch((err) => {
         console.log(err);
-        handleSnackbar("Algo salio mal.");
       });
   };
 
   return (
     <Box m="30px">
-      <Snackbar
-        open={snackbarState.open}
-        autoHideDuration={4000}
-        onClose={handleClose}
-        message={snackbarState.message}
-        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
-        TransitionComponent={Slide}
-      />
-
       <Header
         title="EDITAR CLIENTE"
         subtitle="Edita el perfil de un cliente existente"
@@ -138,7 +103,6 @@ const EditForm = () => {
               >
                 <TextField
                   disabled
-                  variant="filled"
                   type="text"
                   name="ClienteID"
                   label="ClienteID"
@@ -180,8 +144,8 @@ const EditForm = () => {
                   onBlur={handleBlur}
                   onChange={handleChange}
                   value={values.cedula}
-                  error={!!touched.lastName && !!errors.lastName}
-                  helperText={touched.lastName && errors.lastName}
+                  error={!!touched.cedula && !!errors.cedula}
+                  helperText={touched.cedula && errors.cedula}
                   sx={{ gridColumn: "span 1" }}
                 />
                 <TextField
@@ -189,7 +153,7 @@ const EditForm = () => {
                   variant="filled"
                   type="text"
                   name="contact"
-                  label="Numero de telefono"
+                  label="Número de telefono"
                   onBlur={handleBlur}
                   onChange={handleChange}
                   value={values.contact}
@@ -206,8 +170,8 @@ const EditForm = () => {
                   onBlur={handleBlur}
                   onChange={handleChange}
                   value={values.age}
-                  error={!!touched.lastName && !!errors.lastName}
-                  helperText={touched.lastName && errors.lastName}
+                  error={!!touched.age && !!errors.age}
+                  helperText={touched.age && errors.age}
                   sx={{ gridColumn: "span 1" }}
                 />
                 <TextField
@@ -215,7 +179,7 @@ const EditForm = () => {
                   variant="filled"
                   type="email"
                   name="email"
-                  label="Correo electronico"
+                  label="Correo electrónico"
                   onBlur={handleBlur}
                   onChange={handleChange}
                   value={values.email}
@@ -228,13 +192,26 @@ const EditForm = () => {
                   variant="filled"
                   type="text"
                   name="address"
-                  label="Dirrecion"
+                  label="Dirreción"
                   onBlur={handleBlur}
                   onChange={handleChange}
                   value={values.address}
                   error={!!touched.address && !!errors.address}
                   helperText={touched.address && errors.address}
                   sx={{ gridColumn: "span 4" }}
+                />
+                <TextField
+                  fullWidth
+                  variant="filled"
+                  type="number"
+                  name="debt"
+                  label="Deuda"
+                  onBlur={handleBlur}
+                  onChange={handleChange}
+                  value={values.debt}
+                  error={!!touched.debt && !!errors.debt}
+                  helperText={touched.debt && errors.debt}
+                  sx={{ gridColumn: "span 2" }}
                 />
                 <LocalizationProvider dateAdapter={AdapterDayjs}>
                   <DatePicker
@@ -253,7 +230,7 @@ const EditForm = () => {
                         helperText={touched.date && errors.date}
                       />
                     )}
-                    sx={{ gridColumn: "span 4" }}
+                    sx={{ gridColumn: "span 2" }}
                   />
                 </LocalizationProvider>
               </Box>

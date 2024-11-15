@@ -79,7 +79,11 @@ const Login = () => {
   };
 
   return (
-    <Box display="flex" flexDirection="column">
+    <Box
+      display="flex"
+      justifyContent="space-between"
+      className="login-background"
+    >
       <Snackbar
         open={snackbarState.open}
         autoHideDuration={4000}
@@ -88,10 +92,10 @@ const Login = () => {
         anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
         TransitionComponent={Slide}
       />
-      <Box alignSelf="flex-start" sx={{ mt: "50px", ml: "50px" }}>
+      <Box alignSelf="flex-start" flexGrow="2" sx={{ mt: "30px", ml: "50px" }}>
         <img
           alt="logo"
-          height="90px"
+          height="250px"
           width="auto"
           src={`../../assets/full_logo.png`}
           style={{ cursor: "pointer" }}
@@ -100,11 +104,12 @@ const Login = () => {
 
       <Box
         display="flex"
+        flexGrow="1"
         flexDirection="column"
         alignSelf="center"
         backgroundColor="#FAF9F9"
         borderRadius="6px"
-        margin="15px"
+        margin="150px"
         padding="35px 30px"
         boxShadow="0px 3px 5px 3px rgba(184,184,184,0.75)"
         minWidth="500px"
@@ -182,6 +187,11 @@ const Login = () => {
           )}
         </Formik>
       </Box>
+      <Box
+        alignSelf="flex-start"
+        sx={{ mt: "30px", ml: "50px" }}
+        flexGrow="5"
+      ></Box>
     </Box>
   );
 };

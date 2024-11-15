@@ -26,6 +26,16 @@ const Invoices = () => {
 
   const columns = [
     {
+      field: "Cedula",
+      headerName: "Cedula",
+      flex: 0.8,
+    },
+    {
+      field: "Monto",
+      headerName: "Monto",
+      flex: 0.8,
+    },
+    {
       field: "Nombre",
       headerName: "Nombre",
       flex: 1,
@@ -36,9 +46,9 @@ const Invoices = () => {
       flex: 1,
     },
     {
-      field: "Monto",
-      headerName: "Monto",
-      flex: 1,
+      field: "MesesPagados",
+      headerName: "Meses Pagados",
+      flex: 0.7,
     },
     {
       field: "Telefono",
@@ -48,7 +58,7 @@ const Invoices = () => {
     {
       field: "Email",
       headerName: "Correo electronico",
-      flex: 1,
+      flex: 1.2,
     },
 
     {
@@ -66,19 +76,16 @@ const Invoices = () => {
         height="72vh"
         width="169vh"
         sx={{
-          "& .MuiDataGrid-root": { border: "none" },
-          "& .MuiDataGrid-cell": { borderBottom: "none", fontSize: "14px" },
+          "& .MuiDataGrid-cell": { fontSize: "14px" },
           "& .MuiDataGrid-columnHeader": {
-            borderBottom: "none",
             backgroundColor: colors.greenAccent[600],
             fontSize: "14px",
           },
-          "& .MuiDataGrid-virtualScroller": {
-            backgroundColor: colors.primary[400],
-          },
           "& .MuiDataGrid-footerContainer": {
-            borderTop: "none",
             borderRadius: "0 0 6px 6px",
+            backgroundColor: colors.greenAccent[600],
+          },
+          "& .MuiDataGrid-scrollbarFiller--header": {
             backgroundColor: colors.greenAccent[600],
           },
           "& .MuiCheckbox-root": {
@@ -91,7 +98,7 @@ const Invoices = () => {
           columns={columns}
           getRowId={(row) => row.PagoID}
           localeText={esES.components.MuiDataGrid.defaultProps.localeText}
-          checkboxSelection
+          disableRowSelectionOnClick
         />
       </Box>
     </Box>

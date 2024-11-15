@@ -19,6 +19,14 @@ body,
   position: relative;
 }
 
+.login-background {
+  background-image: url(/public/assets/background_blur.jpg);
+  height: 100vh;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
 /* Scrollbar */
 ::-webkit-scrollbar {
   width: 10px;

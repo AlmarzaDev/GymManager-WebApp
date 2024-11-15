@@ -15,8 +15,9 @@ import axios from "axios";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import Header from "../../components/Header";
 import { tokens } from "../../theme";
+import dayjs from "dayjs";
 
-const initialValues = { clientID: "" };
+const initialValues = { clientID: "", cedula: "", active: "" };
 const userSchema = yup
   .object()
   .shape({ clientID: yup.string().required("Requerido.") });
@@ -70,6 +71,18 @@ const AttendanceForm = () => {
       .catch(() => handleSnackbar("Error al registrar salida."));
   };
 
+  const getActiveStatus = (endDate) => {
+    const today = dayjs();
+    const membershipEndDate = dayjs(endDate);
+
+    const isActiveOrNearEnd =
+      membershipEndDate.isSame(today, "day") ||
+      membershipEndDate.isAfter(today) ||
+      !membershipEndDate.diff(today, "month");
+
+    return isActiveOrNearEnd ? "Sí" : "No";
+  };
+
   return (
     <Box m="30px">
       <Snackbar
@@ -86,14 +99,7 @@ const AttendanceForm = () => {
         subtitle="Registrar entrada o salida de un cliente"
       />
       <Formik initialValues={initialValues} validationSchema={userSchema}>
-        {({
-          values,
-          errors,
-          touched,
-          handleBlur,
-          handleChange,
-          handleSubmit,
-        }) => (
+        {({ values, errors, touched, handleBlur, setFieldValue }) => (
           <form onSubmit={(e) => e.preventDefault()}>
             <Box
               maxWidth="1100px"
@@ -117,12 +123,17 @@ const AttendanceForm = () => {
                       `${client.Nombre} ${client.Apellido}`
                     }
                     onChange={(event, newValue) => {
-                      handleChange({
-                        target: {
-                          name: "clientID",
-                          value: newValue ? newValue.ClienteID : "",
-                        },
-                      });
+                      setFieldValue(
+                        "clientID",
+                        newValue ? newValue.ClienteID : ""
+                      );
+                      setFieldValue("cedula", newValue ? newValue.Cedula : "");
+                      setFieldValue(
+                        "active",
+                        newValue
+                          ? getActiveStatus(newValue.FechaFinMembresia)
+                          : "No"
+                      );
                     }}
                     renderInput={(params) => (
                       <TextField
@@ -137,6 +148,22 @@ const AttendanceForm = () => {
                     )}
                   />
                 </FormControl>
+                <TextField
+                  disabled
+                  type="text"
+                  name="cedula"
+                  label="Cédula"
+                  value={values.cedula}
+                  sx={{ gridColumn: "span 2" }}
+                />
+                <TextField
+                  disabled
+                  type="text"
+                  name="active"
+                  label="Esta al día?"
+                  value={values.active}
+                  sx={{ gridColumn: "span 2" }}
+                />
               </Box>
               <Box display="flex" justifyContent="flex-end" mt="20px">
                 <Button
