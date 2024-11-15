@@ -33,8 +33,25 @@ const userSchema = yup.object().shape({
   password: yup.string().required("Requerido."),
 });
 
-const Login = () => {
+const Login = ({ setUser, setIsAuthenticated }) => {
   const navigate = useNavigate();
+
+  React.useEffect(() => {
+    const token = localStorage.getItem("authToken");
+    if (token) {
+      axios
+        .get("http://localhost:5000/auth/verifyToken", {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+        .then(() => {
+          navigate("/");
+        })
+        .catch(() => {
+          localStorage.removeItem("authToken");
+        });
+    }
+  }, [navigate]);
+
   const [snackbarState, setSnackbarState] = React.useState({
     open: false,
     message: "",
@@ -54,28 +71,30 @@ const Login = () => {
     });
   };
 
-  const isNonMobile = useMediaQuery("(min-width:600px)");
-
-  const handleLogin = (values) => {
-    const email = values.email;
-    const password = values.password;
-    axios
-      .post("http://localhost:5000/login", { email, password })
-      .then((res) => {
-        localStorage.setItem("authToken", res.data.token);
-        handleSnackbar("Cliente creado exitosamente!");
-        navigate("/");
-      })
-      .catch((err) => {
-        console.log(err);
-        handleSnackbar(
-          "Credenciales invalidas. Por favor, intenta nuevamente."
-        );
-      });
+  const handleForgotPassword = () => {
+    handleSnackbar("Contacta al 416 4223250");
   };
 
-  const handleForgotPassword = () => {
-    handleSnackbar("Contacta al (424) 158-4946 para obtener la contraseña");
+  const isNonMobile = useMediaQuery("(min-width:600px)");
+
+  const handleLogin = async (values) => {
+    const email = values.email;
+    const password = values.password;
+    try {
+      const response = await axios.post("http://localhost:5000/login", {
+        email,
+        password,
+      });
+      const { token } = response.data;
+
+      localStorage.setItem("authToken", token);
+      setIsAuthenticated(true);
+      setUser({ email });
+      navigate("/");
+    } catch (err) {
+      console.log(err);
+      handleSnackbar("Credenciales invalidas");
+    }
   };
 
   return (
@@ -110,7 +129,7 @@ const Login = () => {
         backgroundColor="#FAF9F9"
         borderRadius="6px"
         margin="150px"
-        padding="35px 30px"
+        padding="30px 30px"
         boxShadow="0px 3px 5px 3px rgba(184,184,184,0.75)"
         minWidth="500px"
         maxWidth="550px"
@@ -119,7 +138,7 @@ const Login = () => {
           Iniciar Sesión
         </Typography>
         <Typography variant="h4" marginTop="10px" marginBottom="30px">
-          Accede a tu cuenta para gestionar tus actividades.
+          Accede a tu cuenta para gestionar el gimnasio.
         </Typography>
 
         <Formik
@@ -171,14 +190,18 @@ const Login = () => {
                   helperText={touched.password && errors.password}
                   sx={{ gridColumn: "span 4" }}
                 />
-                <a className="link" onClick={handleForgotPassword}>
+                <Button
+                  sx={{ width: "200px" }}
+                  variant="text"
+                  onClick={handleForgotPassword}
+                >
                   ¿Olvidaste la contraseña?
-                </a>
+                </Button>
                 <LoginButton
                   type="submit"
                   color="secondary"
                   variant="contained"
-                  sx={{ gridColumn: "span 4", mt: "15px", mb: "20px" }}
+                  sx={{ gridColumn: "span 4", mt: "20px", mb: "20px" }}
                 >
                   Iniciar Sesión
                 </LoginButton>

@@ -1,20 +1,15 @@
 import { useState, useEffect } from "react";
-import { Box, Button, IconButton, Typography, useTheme } from "@mui/material";
+import { Box, Typography, useTheme } from "@mui/material";
 import { tokens } from "../../theme";
 import axios from "axios";
 import dayjs from "dayjs";
-import {
-  DownloadOutlined,
-  AttachMoney,
-  Person,
-  PersonAdd,
-  MoneyOff,
-} from "@mui/icons-material";
+import { AttachMoney, Person, PersonAdd, MoneyOff } from "@mui/icons-material";
 import Header from "../../components/Header";
 import LineChart from "../../components/LineChart";
 import BarChart from "../../components/BarChart";
 import StatBox from "../../components/StatBox";
 import ProgressCircle from "../../components/ProgressCircle";
+import DownloadReport from "../../components/DownloadReport";
 
 const Dashboard = () => {
   const theme = useTheme();
@@ -87,18 +82,7 @@ const Dashboard = () => {
         />
 
         <Box>
-          <Button
-            sx={{
-              backgroundColor: colors.blueAccent[700],
-              color: colors.grey[100],
-              fontSize: "14px",
-              fontWeight: "bold",
-              padding: "10px 20px",
-            }}
-          >
-            <DownloadOutlined sx={{ mr: "10px" }} />
-            Descargar Reportes
-          </Button>
+          <DownloadReport />
         </Box>
       </Box>
 
@@ -223,15 +207,8 @@ const Dashboard = () => {
                 ${data.YearlyPaymentsAmount}
               </Typography>
             </Box>
-            <Box>
-              <IconButton>
-                <DownloadOutlined
-                  sx={{ fontSize: "26px", color: colors.greenAccent[500] }}
-                />
-              </IconButton>
-            </Box>
           </Box>
-          <Box height="250px" m="-20px 0 0 0">
+          <Box height="250px" m="-30px 0  0">
             <LineChart isDashboard={true} />
           </Box>
         </Box>

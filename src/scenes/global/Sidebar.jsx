@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ProSidebar, Menu, MenuItem } from "react-pro-sidebar";
 import "react-pro-sidebar/dist/css/styles.css";
 import { Box, IconButton, Typography, useTheme } from "@mui/material";
@@ -11,12 +11,13 @@ import {
   ReceiptOutlined,
   PersonAddOutlined,
   PaymentsOutlined,
+  HistoryOutlined,
   AddAlarmOutlined,
   CalendarTodayOutlined,
-  HelpOutlined,
   BarChartOutlined,
   TimelineOutlined,
 } from "@mui/icons-material";
+import axios from "axios";
 
 const Item = ({ title, to, icon, selected, setSelected }) => {
   const theme = useTheme();
@@ -40,6 +41,16 @@ const Sidebar = () => {
   const colors = tokens(theme.palette.mode);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [selected, setSelected] = useState("Dashboard");
+  const [userData, setUserData] = useState([]);
+
+  useEffect(() => {
+    axios
+      .get("http://localhost:5000/user/get_profile")
+      .then((res) => {
+        setUserData(res.data);
+      })
+      .catch((err) => console.error(err));
+  }, []);
 
   return (
     <Box
@@ -106,7 +117,7 @@ const Sidebar = () => {
                   fontWeight="bold"
                   sx={{ m: "10px 0 0 0" }}
                 >
-                  Usuario
+                  {userData.Usuario}
                 </Typography>
                 <Typography variant="h5" color={colors.greenAccent[400]}>
                   Admin
@@ -145,6 +156,13 @@ const Sidebar = () => {
               selected={selected}
               setSelected={setSelected}
             />
+            <Item
+              title="Historial"
+              to="/history"
+              icon={<HistoryOutlined />}
+              selected={selected}
+              setSelected={setSelected}
+            />
             <Typography
               variant="h6"
               color={colors.grey[300]}
@@ -178,13 +196,6 @@ const Sidebar = () => {
               title="Calendario"
               to="/calendar"
               icon={<CalendarTodayOutlined />}
-              selected={selected}
-              setSelected={setSelected}
-            />
-            <Item
-              title="Preguntas Frecuentes"
-              to="/faq"
-              icon={<HelpOutlined />}
               selected={selected}
               setSelected={setSelected}
             />

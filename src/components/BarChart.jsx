@@ -23,8 +23,6 @@ const BarChart = ({ isDashboard = false }) => {
       .catch((err) => console.log(err));
   }, []);
 
-  console.log(data);
-
   return (
     <ResponsiveBar
       data={data}

@@ -1,9 +1,11 @@
 const express = require("express");
+const jwt = require("jsonwebtoken");
 const cors = require("cors");
 const mysql = require("mysql");
 const path = require("path");
 const { v4: uuid4v } = require("uuid");
 const dayjs = require("dayjs");
+const secretKey = "foreskin";
 
 const app = express();
 
@@ -20,18 +22,50 @@ const db = mysql.createConnection({
   database: "gym_logistics",
 });
 
-const users = [{ email: "admin@gmail.com", password: "contraseña123" }];
+const verifyToken = (req, res, next) => {
+  const token = req.headers["authorization"]?.split(" ")[1];
+  if (!token) return res.status(403).json({ message: "Token required" });
+
+  jwt.verify(token, secretKey, (err, decoded) => {
+    if (err) return res.status(401).json({ message: "Invalid token" });
+    req.user = decoded;
+    next();
+  });
+};
+
+app.get("/auth/verifyToken", verifyToken, (req, res) => {
+  res.json({ user: req.user });
+});
 
 app.post("/login", (req, res) => {
-  const user = users.find(
-    (u) => u.email === req.body.email && u.password === req.body.password
-  );
+  const { email, password } = req.body;
 
-  if (user) {
-    return res.json({ token: "your-auth-token" });
-  } else {
-    return res.status(401).json({ message: "Credenciales invalidas" });
-  }
+  const sql = "SELECT * FROM recepcionista WHERE Email = ?";
+  db.query(sql, [email], (err, results) => {
+    if (err) {
+      return res.status(500).json({ message: "Database error", error: err });
+    }
+
+    if (results.length > 0) {
+      const user = results[0];
+
+      if (password == user.Contrasena) {
+        const token = jwt.sign(
+          {
+            email: user.Email,
+          },
+          secretKey,
+          { expiresIn: "1h" }
+        );
+
+        return res.json({ token });
+      } else {
+        return res.status(401).json({ message: "Credenciales invalidas" });
+      }
+    } else {
+      return res.status(401).json({ message: "Usuario no encontrado" });
+    }
+  });
 });
 
 app.post("/add_client", (req, res) => {
@@ -317,6 +351,88 @@ app.post("/attendance/checkout", (req, res) => {
   );
 });
 
+app.put("/user/update_profile", (req, res) => {
+  const { name, email, password } = req.body;
+
+  const sql = `
+    UPDATE recepcionista SET 
+      Usuario = ?,
+      Email = ?,
+      Contrasena = ?
+  `;
+
+  const values = [name, email, password];
+
+  db.query(sql, values, (err, result) => {
+    if (err) {
+      return res
+        .status(500)
+        .json({ error: "Error al actualizar el perfil: " + err });
+    }
+    res.json({ message: "Perfil actualizado exitosamente" });
+  });
+});
+
+app.put("/general/update_settings", (req, res) => {
+  const { registrationFee, membershipFee } = req.body;
+
+  const sql = `
+    UPDATE recepcionista SET 
+      CuotaRegistro = ?, 
+      CuotaMensual = ?
+  `;
+
+  const values = [registrationFee, membershipFee];
+
+  db.query(sql, values, (err, result) => {
+    if (err) {
+      return res
+        .status(500)
+        .json({ error: "Error al actualizar las configuraciones: " + err });
+    }
+    res.json({
+      message: "Configuraciones generales actualizadas exitosamente",
+    });
+  });
+});
+
+app.get("/user/get_profile", (req, res) => {
+  const sql = `
+    SELECT Usuario, Email, Contrasena
+    FROM recepcionista
+    LIMIT 1
+  `;
+  db.query(sql, (err, results) => {
+    if (err) {
+      return res.status(500).json({ message: "Error del servidor: " + err });
+    }
+    if (results.length === 0) {
+      return res.status(404).json({ message: "Usuario no encontrado" });
+    }
+    res.json(results[0]);
+  });
+});
+
+app.get("/general/get_settings", (req, res) => {
+  const sql = `
+    SELECT CuotaRegistro, CuotaMensual 
+    FROM recepcionista
+    LIMIT 1
+  `;
+
+  db.query(sql, (err, results) => {
+    if (err) {
+      return res.status(500).json({ message: "Error del servidor: " + err });
+    }
+    if (results.length === 0) {
+      return res
+        .status(404)
+        .json({ message: "Configuraciones no encontradas" });
+    }
+    res.json(results[0]);
+  });
+});
+
 app.get("/get_clients", (req, res) => {
   const sql = "SELECT * FROM clientes";
   db.query(sql, (err, result) => {
@@ -349,11 +465,28 @@ app.get("/get_payments/lineData", (req, res) => {
 });
 
 app.get("/get_attendance", (req, res) => {
-  const sql =
-    "SELECT * FROM clientes JOIN asistencias ON clientes.ClienteID = asistencias.ClienteID";
-  db.query(sql, (err, result) => {
-    if (err) res.json({ message: "Error del servidor" + err });
-    return res.json(result);
+  const sql = `
+    SELECT 
+      a.AsistenciaID, 
+      c.Cedula, 
+      c.Nombre, 
+      c.Apellido, 
+      c.Telefono, 
+      c.Email, 
+      a.FechaAsistencia, 
+      a.HoraLlegada, 
+      a.HoraSalida
+    FROM asistencias a
+    JOIN clientes c ON a.ClienteID = c.ClienteID
+    ORDER BY a.FechaAsistencia DESC
+  `;
+  db.query(sql, (err, results) => {
+    if (err) {
+      return res
+        .status(500)
+        .json({ message: "Error fetching attendance data", error: err });
+    }
+    res.json(results);
   });
 });
 
@@ -423,6 +556,24 @@ app.get("/recentPayments", (req, res) => {
   db.query(sql, (err, result) => {
     if (err) return res.json({ message: "Error del servidor" + err });
     return res.json(result);
+  });
+});
+
+app.get("/payments/latest", (req, res) => {
+  const sql = `
+    SELECT p.PagoID, c.Nombre AS ClienteNombre, c.Apellido AS ClienteApellido, p.Monto, p.FechaPago, p.MesesPagados
+    FROM pagos p
+    JOIN clientes c ON p.ClienteID = c.ClienteID
+    ORDER BY p.FechaPago DESC
+    LIMIT 30
+  `;
+  db.query(sql, (err, results) => {
+    if (err) {
+      return res
+        .status(500)
+        .json({ message: "Error fetching payments", error: err });
+    }
+    res.json(results);
   });
 });
 

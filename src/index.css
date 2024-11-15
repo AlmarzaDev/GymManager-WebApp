@@ -27,6 +27,15 @@ body,
   background-size: cover;
 }
 
+.fc-event {
+  background-color: #61b0af;
+  border-color: #61b0af;
+}
+
+.fc-event-title {
+  color: rgb(23, 23, 23);
+}
+
 /* Scrollbar */
 ::-webkit-scrollbar {
   width: 10px;

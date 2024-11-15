@@ -64,7 +64,6 @@ const PayForm = () => {
           FechaFinMembresia: dayjs(item.FechaFinMembresia).format("MM/DD/YYYY"),
         }));
         setClientData(formattedData);
-        console.log(formattedData);
       })
       .catch((err) => console.log(err));
   };
