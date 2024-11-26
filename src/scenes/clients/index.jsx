@@ -117,7 +117,7 @@ const Clients = () => {
         const isActiveOrNearEnd =
           currentEndDate.isSame(today) ||
           currentEndDate.isAfter(today) ||
-          !currentEndDate.diff(today, "month");
+          !currentEndDate.diff(today, "week");
 
         const textColor = isActiveOrNearEnd ? "green" : "red";
         const IconComponent = isActiveOrNearEnd ? CheckCircle : Warning;

@@ -1,4 +1,5 @@
 estimated / actual
 update app palette properly this time. 
-make a simple user system, complete with image and account editing 6h
-prevent login from showing up when already signed in
+small letters
+add method of pay
+add password thingy

@@ -26,7 +26,7 @@ const DownloadReport = () => {
     const doc = new jsPDF();
 
     doc.setFontSize(18);
-    doc.text("Reporte de Últimos Pagos", 14, 20);
+    doc.text("Reporte de Ultimos Pagos", 14, 20);
 
     const tableColumn = [
       "ID de Pago",

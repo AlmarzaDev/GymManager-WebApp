@@ -253,7 +253,7 @@ app.post("/add_payment", (req, res) => {
       const endDateCondition =
         dayjs(currentEndDate).isSame(today) ||
         dayjs(currentEndDate).isAfter(today) ||
-        !dayjs(currentEndDate).diff(today, "month");
+        dayjs(currentEndDate).diff(today, "week") <= 1;
 
       const newEndDate = endDateCondition
         ? dayjs(currentEndDate).add(paidMonths, "month").format("YYYY-MM-DD")

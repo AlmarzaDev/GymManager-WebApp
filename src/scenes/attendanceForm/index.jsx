@@ -80,7 +80,7 @@ const AttendanceForm = () => {
       membershipEndDate.isAfter(today) ||
       !membershipEndDate.diff(today, "month");
 
-    return isActiveOrNearEnd ? "Sí" : "No";
+    return isActiveOrNearEnd ? "Si" : "No";
   };
 
   return (
